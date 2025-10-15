@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Travel Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', 'Courier', monospace;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100vw;
+            margin: 0 auto;
+        }
+
+        /* Start Page */
+        .start-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%);
+            position: relative;
+        }
+
+        .start-page.hidden {
+            display: none;
+        }
+
+        .logo-large {
+            font-size: 72px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #00ff87 0%, #60efff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 60px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            font-weight: 700;
+        }
+
+        .intent-container {
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+        }
+
+        .intent-input-wrapper {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid #00ff87;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .intent-input {
+            width: 100%;
+            padding: 40px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 28px;
+            font-family: 'Courier New', 'Courier', monospace;
+            font-weight: 700;
+            resize: none;
+            outline: none;
+            min-height: 200px;
+        }
+
+        .intent-input::placeholder {
+            color: #444;
+            font-weight: 400;
+        }
+
+        .input-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 2px solid #00ff87;
+        }
+
+        .voice-btn {
+            padding: 15px 30px;
+            background: #00ff87;
+            border: none;
+            color: #0a0a0a;
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+            font-family: 'Courier New', 'Courier', monospace;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .voice-btn:hover {
+            background: #60efff;
+            transform: translateY(-2px);
+        }
+
+        .voice-btn.listening {
+            animation: pulse-border 1.5s infinite;
+            background: #ff0055;
+        }
+
+        @keyframes pulse-border {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); }
+            50% { box-shadow: 0 0 0 20px rgba(255, 0, 85, 0); }
+        }
+
+        .submit-btn {
+            padding: 15px 40px;
+            background: transparent;
+            border: 2px solid #00ff87;
+            color: #00ff87;
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.2s ease;
+            font-family: 'Courier New', 'Courier', monospace;
+        }
+
+        .submit-btn:hover {
+            background: #00ff87;
+            color: #0a0a0a;
+        }
+
+        .suggestions {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .suggestion-chip {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #333;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .suggestion-chip:hover {
+            border-color: #00ff87;
+            color: #00ff87;
+            background: rgba(0, 255, 135, 0.05);
+        }
+
+        /* Main App */
+        .main-app {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .main-app.active {
+            display: block;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header {
+            padding: 30px 40px;
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0a0a0a;
+            border-bottom: 2px solid #00ff87;
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 900;
+            color: #00ff87;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .ai-badge {
+            background: #00ff87;
+            padding: 6px 15px;
+            font-size: 11px;
+            font-weight: 900;
+            color: #0a0a0a;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .progress-bar {
+            padding: 0;
+            margin: 0;
+            display: flex;
+            gap: 0;
+            background: #0a0a0a;
+            border-bottom: 1px solid #222;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            color: #444;
+            font-weight: 900;
+            font-size: 11px;
+            position: relative;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-right: 1px solid #222;
+        }
+
+        .progress-step:last-child {
+            border-right: none;
+        }
+
+        .progress-step.active {
+            color: #00ff87;
+            background: rgba(0, 255, 135, 0.05);
+            border-bottom: 3px solid #00ff87;
+        }
+
+        .progress-step.completed {
+            color: #00ff87;
+        }
+
+        .progress-step.completed::after {
+            content: '✓';
+            margin-left: 8px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            background: #0a0a0a;
+        }
+
+        .panel {
+            padding: 40px;
+            height: fit-content;
+            min-height: calc(100vh - 200px);
+            border-right: 1px solid #222;
+        }
+
+        .panel:last-child {
+            border-right: none;
+        }
+
+        .panel-title {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            border-bottom: 2px solid #00ff87;
+            padding-bottom: 15px;
+        }
+
+        .ai-indicator {
+            width: 10px;
+            height: 10px;
+            background: #00ff87;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border: 2px solid #333;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            color: #666;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Courier New', 'Courier', monospace;
+            border-right: 1px solid #333;
+        }
+
+        .tab:last-child {
+            border-right: none;
+        }
+
+        .tab.active {
+            background: #00ff87;
+            color: #0a0a0a;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            color: #00ff87;
+            font-size: 11px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .ai-suggestion {
+            font-size: 10px;
+            color: #60efff;
+            font-weight: 700;
+            margin-left: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #333;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            font-family: 'Courier New', 'Courier', monospace;
+            font-weight: 700;
+        }
+
+        input::placeholder {
+            color: #444;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #00ff87;
+            background: rgba(0, 255, 135, 0.05);
+        }
+
+        .date-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 25px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #00ff87;
+        }
+
+        .checkbox-label {
+            color: #ccc;
+            font-size: 13px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .search-btn {
+            width: 100%;
+            padding: 20px;
+            background: #00ff87;
+            border: none;
+            color: #0a0a0a;
+            font-weight: 900;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-family: 'Courier New', 'Courier', monospace;
+        }
+
+        .search-btn:hover {
+            background: #60efff;
+            transform: translateY(-2px);
+        }
+
+        .chat-container {
+            height: 450px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid #222;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message.ai {
+            justify-content: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 15px 20px;
+            font-size: 13px;
+            line-height: 1.6;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .message.ai .message-content {
+            background: rgba(0, 255, 135, 0.1);
+            border-left: 3px solid #00ff87;
+            color: #fff;
+        }
+
+        .message.user .message-content {
+            background: rgba(96, 239, 255, 0.1);
+            border-right: 3px solid #60efff;
+            color: #fff;
+        }
+
+        .chat-input-group {
+            display: flex;
+            gap: 0;
+            border: 2px solid #333;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: none;
+            border-right: 2px solid #333;
+        }
+
+        .send-btn {
+            padding: 15px 30px;
+            background: #00ff87;
+            border: none;
+            color: #0a0a0a;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Courier New', 'Courier', monospace;
+            font-size: 12px;
+        }
+
+        .send-btn:hover {
+            background: #60efff;
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .quick-action {
+            padding: 10px 18px;
+            background: transparent;
+            border: 1px solid #333;
+            color: #888;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            font-family: 'Courier New', 'Courier', monospace;
+        }
+
+        .quick-action:hover {
+            border-color: #00ff87;
+            color: #00ff87;
+            background: rgba(0, 255, 135, 0.05);
+        }
+
+        .itinerary {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 2px solid #333;
+        }
+
+        .itinerary-title {
+            color: #00ff87;
+            font-size: 16px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .itinerary-item {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border-left: 3px solid #00ff87;
+            margin-bottom: 12px;
+            color: #ccc;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .itinerary-time {
+            font-weight: 900;
+            color: #00ff87;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 11px;
+        }
+
+        .price-prediction {
+            margin-top: 25px;
+            padding: 20px;
+            background: rgba(0, 255, 135, 0.05);
+            border: 2px solid #00ff87;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .price-prediction strong {
+            color: #00ff87;
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .panel {
+                border-right: none;
+                border-bottom: 1px solid #222;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Page -->
+        <div class="start-page" id="startPage">
+            <div class="logo-large">TRAVELAI</div>
+            <div class="tagline">AI-Powered Journey Planning</div>
+            
+            <div class="intent-container">
+                <div class="intent-input-wrapper">
+                    <textarea 
+                        class="intent-input" 
+                        id="intentInput" 
+                        placeholder="Where do you want to go? Tell me your plans..."
+                    ></textarea>
+                    <div class="input-actions">
+                        <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
+                            <span id="voiceIcon">🎤</span>
+                            <span id="voiceText">SPEAK</span>
+                        </button>
+                        <button class="submit-btn" onclick="startBooking()">BEGIN →</button>
+                    </div>
+                </div>
+                
+                <div class="suggestions">
+                    <div class="suggestion-chip" onclick="fillIntent('Weekend trip to Paris for two')">Weekend Getaway</div>
+                    <div class="suggestion-chip" onclick="fillIntent('Business trip to London next week')">Business Travel</div>
+                    <div class="suggestion-chip" onclick="fillIntent('Beach vacation in Bali for 7 days')">Vacation Planning</div>
+                    <div class="suggestion-chip" onclick="fillIntent('Multi-city tour: Berlin, Prague, Vienna')">Multi-City Tour</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div class="main-app" id="mainApp">
+            <div class="header">
+                <div class="logo">
+                    TRAVELAI
+                    <span class="ai-badge">AI POWERED</span>
+                </div>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-step active">NOW BOOKING</div>
+                <div class="progress-step">HOTEL</div>
+                <div class="progress-step">CONFIRM</div>
+                <div class="progress-step">PAYMENT</div>
+                <div class="progress-step">COMPLETE</div>
+            </div>
+
+            <div class="main-content">
+                <!-- Booking Panel -->
+                <div class="panel">
+                    <div class="panel-title">
+                        <div class="ai-indicator"></div>
+                        FLIGHT BOOKING
+                    </div>
+
+                    <div class="tab-group">
+                        <button class="tab">ONE WAY</button>
+                        <button class="tab active">ROUND TRIP</button>
+                        <button class="tab">MULTI-CITY</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            FROM
+                            <span class="ai-suggestion">• POPULAR: BERLIN</span>
+                        </label>
+                        <input type="text" value="Berlin" placeholder="DEPARTURE CITY">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            TO
+                            <span class="ai-suggestion">• TRENDING DESTINATION</span>
+                        </label>
+                        <input type="text" value="Paris" placeholder="ARRIVAL CITY">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">TRAVEL DATES</label>
+                        <div class="date-group">
+                            <input type="date" value="2018-08-07">
+                            <input type="date" value="2018-08-09">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">TRAVELERS</label>
+                        <select>
+                            <option>1 ADULT</option>
+                            <option>2 ADULTS</option>
+                            <option>3+ ADULTS</option>
+                        </select>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="checkbox" id="direct" checked>
+                        <label class="checkbox-label" for="direct">Direct Flights Only</label>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="checkbox" id="hotel" checked>
+                        <label class="checkbox-label" for="hotel">Include Hotel Booking</label>
+                    </div>
+
+                    <div class="price-prediction">
+                        <strong>⚡ AI INSIGHT</strong>
+                        BEST TIME TO BOOK! PRICES ARE 15% LOWER THAN AVERAGE FOR THIS ROUTE.
+                    </div>
+
+                    <button class="search-btn">SEARCH FLIGHTS</button>
+                </div>
+
+                <!-- AI Assistant Panel -->
+                <div class="panel">
+                    <div class="panel-title">
+                        <div class="ai-indicator"></div>
+                        AI ASSISTANT
+                    </div>
+
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="message ai">
+                                <div class="message-content">
+                                    Hello! I see you're planning a trip from Berlin to Paris. I can help you find the best flights, hotels, and create a personalized itinerary. What's most important to you for this trip?
+                                </div>
+                            </div>
+                            <div class="message user">
+                                <div class="message-content">
+                                    I have a client meeting next Wednesday and need direct flights plus a central hotel.
+                                </div>
+                            </div>
+                            <div class="message ai">
+                                <div class="message-content">
+                                    Perfect! I've set up your search for direct flights. Based on your meeting, I recommend arriving Tuesday evening and departing Thursday. Would you like me to suggest hotels near business districts?
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quick-actions">
+                            <button class="quick-action" onclick="addQuickMessage('Find cheapest option')">💰 CHEAPEST</button>
+                            <button class="quick-action" onclick="addQuickMessage('Best hotels near center')">🏨 CENTRAL</button>
+                            <button class="quick-action" onclick="addQuickMessage('Add car rental')">🚗 CAR RENTAL</button>
+                        </div>
+
+                        <div class="chat-input-group">
+                            <input type="text" class="chat-input" id="chatInput" placeholder="ASK ME ANYTHING...">
+                            <button class="send-btn" onclick="sendMessage()">SEND</button>
+                        </div>
+                    </div>
+
+                    <div class="itinerary">
+                        <div class="itinerary-title">SMART ITINERARY</div>
+                        <div class="itinerary-item">
+                            <div class="itinerary-time">WED, AUG 7 • 09:00</div>
+                            Flight departure from Berlin (Direct)
+                        </div>
+                        <div class="itinerary-item">
+                            <div class="itinerary-time">WED, AUG 7 • 14:00</div>
+                            Meeting with new client
+                        </div>
+                        <div class="itinerary-item">
+                            <div class="itinerary-time">FRI, AUG 9 • 18:00</div>
+                            Return flight to Berlin
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+        let isListening = false;
+
+        // Initialize speech recognition if available
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                document.getElementById('intentInput').value = transcript;
+            };
+
+            recognition.onend = function() {
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('listening');
+                document.getElementById('voiceText').textContent = 'SPEAK';
+            };
+        }
+
+        function toggleVoice() {
+            if (!recognition) {
+                alert('Speech recognition is not supported in your browser. Please type your travel plans instead.');
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+                isListening = false;
+                document.getElementById('voiceBtn').classList.remove('listening');
+                document.getElementById('voiceText').textContent = 'SPEAK';
+            } else {
+                recognition.start();
+                isListening = true;
+                document.getElementById('voiceBtn').classList.add('listening');
+                document.getElementById('voiceText').textContent = 'LISTENING...';
+            }
+        }
+
+        function fillIntent(text) {
+            document.getElementById('intentInput').value = text;
+        }
+
+        function startBooking() {
+            const intent = document.getElementById('intentInput').value.trim();
+            if (intent) {
+                document.getElementById('startPage').classList.add('hidden');
+                document.getElementById('mainApp').classList.add('active');
+            } else {
+                alert('Please tell us about your travel plans first!');
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                const messagesContainer = document.getElementById('chatMessages');
+                
+                const userMessage = document.createElement('div');
+                userMessage.className = 'message user';
+                userMessage.innerHTML = `<div class="message-content">${message}</div>`;
+                messagesContainer.appendChild(userMessage);
+                
+                input.value = '';
+                
+                setTimeout(() => {
+                    const aiResponse = document.createElement('div');
+                    aiResponse.className = 'message ai';
+                    aiResponse.innerHTML = `<div class="message-content">I can help with that! Let me search for the best options for you.</div>`;
+                    messagesContainer.appendChild(aiResponse);
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, 1000);
+                
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        function addQuickMessage(text) {
+            const input = document.getElementById('chatInput');
+            input.value = text;
+            sendMessage();
+        }
+
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        document.getElementById('intentInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                startBooking();
+            }
+        });
+    </script>
+</body>
+</html>
