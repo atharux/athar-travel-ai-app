@@ -283,6 +283,117 @@
 
         // Initialize price graph on load
         setTimeout(initPriceGraph, 500);
+
+        // Restaurant Search
+        async function searchRestaurants() {
+            const city = document.getElementById('restaurantCity').value.trim();
+            const cuisine = document.getElementById('cuisineType').value;
+            const priceRange = document.getElementById('priceRange').value;
+
+            if (!city) {
+                alert('Please enter a location.');
+                return;
+            }
+
+            const resultsDiv = document.getElementById('restaurantResults');
+            resultsDiv.innerHTML = '<div class="loading">FINDING BEST RESTAURANTS</div>';
+            
+            document.getElementById('restaurantSearchBtn').disabled = true;
+
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            const demoRestaurants = [
+                {
+                    name: 'Le Petit Bistro',
+                    cuisine: 'French Cuisine',
+                    rating: '⭐⭐⭐⭐⭐ 4.8',
+                    price: '€€€',
+                    description: 'Authentic French bistro with seasonal menu and excellent wine selection. Known for their duck confit and crème brûlée.',
+                    location: 'Le Marais District'
+                },
+                {
+                    name: 'Sushi Zen Master',
+                    cuisine: 'Japanese Cuisine',
+                    rating: '⭐⭐⭐⭐⭐ 4.9',
+                    price: '€€€€',
+                    description: 'Traditional omakase experience with the freshest fish. Chef Takeshi brings 20 years of Tokyo expertise.',
+                    location: 'Opera District'
+                },
+                {
+                    name: 'La Trattoria',
+                    cuisine: 'Italian Cuisine',
+                    rating: '⭐⭐⭐⭐ 4.6',
+                    price: '€€',
+                    description: 'Family-run Italian restaurant serving handmade pasta and wood-fired pizzas. Cozy atmosphere.',
+                    location: 'Latin Quarter'
+                },
+                {
+                    name: 'Spice Route',
+                    cuisine: 'Indian Cuisine',
+                    rating: '⭐⭐⭐⭐ 4.7',
+                    price: '€€',
+                    description: 'Modern Indian cuisine with traditional flavors. Excellent vegetarian options and tandoori specialties.',
+                    location: 'Montparnasse'
+                },
+                {
+                    name: 'Green Garden Cafe',
+                    cuisine: 'Vegetarian / Vegan',
+                    rating: '⭐⭐⭐⭐ 4.5',
+                    price: '€',
+                    description: 'Plant-based paradise with creative dishes. Fresh, organic, and Instagram-worthy presentations.',
+                    location: 'Canal Saint-Martin'
+                }
+            ];
+
+            // Filter by cuisine if selected
+            let filteredRestaurants = demoRestaurants;
+            if (cuisine) {
+                filteredRestaurants = demoRestaurants.filter(r => 
+                    r.cuisine.toLowerCase().includes(cuisine)
+                );
+            }
+
+            displayRestaurants(filteredRestaurants, resultsDiv);
+            document.getElementById('restaurantSearchBtn').disabled = false;
+            
+            addAIMessage(`I found ${filteredRestaurants.length} great restaurants in ${city}! ${cuisine ? `Focusing on ${cuisine} cuisine as requested.` : ''} Would you like recommendations for specific meals or dietary preferences?`);
+        }
+
+        function displayRestaurants(restaurants, resultsDiv) {
+            if (restaurants.length === 0) {
+                resultsDiv.innerHTML = '<div class="error-message">No restaurants found matching your criteria. Try adjusting your filters.</div>';
+                return;
+            }
+
+            let html = '<div class="restaurant-results">';
+            
+            restaurants.forEach(restaurant => {
+                html += `
+                    <div class="restaurant-card">
+                        <div class="restaurant-header">
+                            <div>
+                                <div class="restaurant-name">${restaurant.name}</div>
+                                <div class="restaurant-cuisine">🍽 ${restaurant.cuisine}</div>
+                            </div>
+                            <div class="restaurant-rating">${restaurant.rating}</div>
+                        </div>
+                        <div class="restaurant-details">
+                            ${restaurant.description}
+                            <div style="margin-top: 10px;">📍 ${restaurant.location}</div>
+                        </div>
+                        <div class="restaurant-price">Price Range: ${restaurant.price}</div>
+                        <button class="select-flight-btn" onclick="selectRestaurant('${restaurant.name}')">VIEW DETAILS & RESERVE</button>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        function selectRestaurant(name) {
+            addAIMessage(`Great choice! ${name} is an excellent option. Would you like me to help you make a reservation or find restaurants nearby for other meals during your trip?`);
+        }
     <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -317,15 +428,15 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.95);
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
             backdrop-filter: blur(10px);
         }
 
-        .config-modal.hidden {
-            display: none;
+        .config-modal.show {
+            display: flex;
         }
 
         .config-content {
@@ -334,6 +445,30 @@
             padding: 40px;
             max-width: 600px;
             width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .config-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: #666;
+            font-size: 32px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            transition: all 0.2s ease;
+        }
+
+        .config-close:hover {
+            color: #00ff87;
+            transform: rotate(90deg);
         }
 
         .config-title {
@@ -350,6 +485,22 @@
             margin-bottom: 30px;
             line-height: 1.6;
             font-size: 13px;
+        }
+
+        .config-note {
+            background: rgba(96, 239, 255, 0.1);
+            border: 1px solid #60efff;
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 12px;
+            color: #60efff;
+            line-height: 1.5;
+        }
+
+        .config-note strong {
+            color: #60efff;
+            display: block;
+            margin-bottom: 8px;
         }
 
         .config-group {
@@ -975,6 +1126,226 @@
             font-weight: 900;
         }
 
+        .restaurant-results {
+            margin-top: 30px;
+        }
+
+        .restaurant-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid #333;
+            padding: 25px;
+            margin-bottom: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .restaurant-card:hover {
+            border-color: #00ff87;
+            background: rgba(0, 255, 135, 0.05);
+        }
+
+        .restaurant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .restaurant-name {
+            font-size: 16px;
+            font-weight: 900;
+            color: #00ff87;
+            text-transform: uppercase;
+        }
+
+        .restaurant-rating {
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .restaurant-cuisine {
+            color: #60efff;
+            font-size: 12px;
+            margin-top: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .restaurant-details {
+            color: #888;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .restaurant-price {
+            color: #ccc;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* Help Modal */
+        .help-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            backdrop-filter: blur(10px);
+        }
+
+        .help-modal.show {
+            display: flex;
+        }
+
+        .help-content {
+            background: #1a1a1a;
+            border: 2px solid #60efff;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .help-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            color: #666;
+            font-size: 32px;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            transition: all 0.2s ease;
+        }
+
+        .help-close:hover {
+            color: #60efff;
+            transform: rotate(90deg);
+        }
+
+        .help-title {
+            font-size: 28px;
+            font-weight: 900;
+            color: #60efff;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .help-section {
+            margin-bottom: 35px;
+        }
+
+        .help-section-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #00ff87;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .help-text {
+            color: #ccc;
+            line-height: 1.8;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .help-steps {
+            background: rgba(0, 255, 135, 0.05);
+            border-left: 3px solid #00ff87;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .help-step {
+            color: #ccc;
+            font-size: 14px;
+            line-height: 1.8;
+            margin-bottom: 12px;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .help-step::before {
+            content: attr(data-num);
+            position: absolute;
+            left: 0;
+            color: #00ff87;
+            font-weight: 900;
+        }
+
+        .help-link {
+            color: #60efff;
+            text-decoration: none;
+            font-weight: 700;
+            border-bottom: 1px dashed #60efff;
+        }
+
+        .help-link:hover {
+            color: #00ff87;
+            border-bottom-color: #00ff87;
+        }
+
+        .help-note {
+            background: rgba(96, 239, 255, 0.1);
+            border: 2px solid #60efff;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 13px;
+            color: #60efff;
+            line-height: 1.6;
+        }
+
+        .help-note strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .help-warning {
+            background: rgba(255, 165, 0, 0.1);
+            border: 2px solid #ffa500;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 13px;
+            color: #ffa500;
+            line-height: 1.6;
+        }
+
+        .help-cta {
+            width: 100%;
+            padding: 18px;
+            background: #60efff;
+            border: none;
+            color: #0a0a0a;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-top: 25px;
+            transition: all 0.2s ease;
+        }
+
+        .help-cta:hover {
+            background: #00ff87;
+            transform: translateY(-2px);
+        }
+
         .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1344,37 +1715,43 @@
     <!-- API Configuration Modal -->
     <div class="config-modal" id="configModal">
         <div class="config-content">
-            <div class="config-title">API Configuration</div>
+            <button class="config-close" onclick="closeConfig()">×</button>
+            <div class="config-title">⚡ API Configuration</div>
             <div class="config-description">
-                To enable real flight search and AI chat, you'll need API keys from Amadeus and OpenAI. Both offer free tiers perfect for testing.
+                To enable real data, you need just 2 API keys. Both offer generous free tiers perfect for portfolio projects.
+            </div>
+
+            <div class="config-note">
+                <strong>💡 TIP: Demo Mode Works Without Any Setup!</strong>
+                You can use the app immediately in demo mode. Only configure APIs if you want real flight/hotel data.
             </div>
             
             <div class="config-group">
                 <label class="config-label">
-                    Amadeus API Key
-                    <a href="https://developers.amadeus.com/register" target="_blank" class="config-link">(Get Free Key)</a>
+                    1. Amadeus API Key (Flights, Hotels, Restaurants)
+                    <a href="https://developers.amadeus.com/register" target="_blank" class="config-link">(Get Free Key - 2000 calls/month)</a>
                 </label>
-                <input type="text" class="config-input" id="amadeusKey" placeholder="Enter your Amadeus API key">
+                <input type="text" class="config-input" id="amadeusKey" placeholder="Your Amadeus API Key">
             </div>
 
             <div class="config-group">
                 <label class="config-label">
                     Amadeus API Secret
                 </label>
-                <input type="password" class="config-input" id="amadeusSecret" placeholder="Enter your Amadeus API secret">
+                <input type="password" class="config-input" id="amadeusSecret" placeholder="Your Amadeus API Secret">
             </div>
 
             <div class="config-group">
                 <label class="config-label">
-                    OpenAI API Key
-                    <a href="https://platform.openai.com/api-keys" target="_blank" class="config-link">(Get Key)</a>
+                    2. OpenAI API Key (AI Chat Assistant)
+                    <a href="https://platform.openai.com/api-keys" target="_blank" class="config-link">(Get Key - ~$0.002 per message)</a>
                 </label>
-                <input type="password" class="config-input" id="openaiKey" placeholder="Enter your OpenAI API key">
+                <input type="password" class="config-input" id="openaiKey" placeholder="Your OpenAI API Key">
             </div>
 
             <div class="config-buttons">
-                <button class="config-btn" onclick="saveConfig()">Save & Enable</button>
-                <button class="config-btn secondary" onclick="useDemoMode()">Use Demo Mode</button>
+                <button class="config-btn" onclick="saveConfig()">💾 Save & Enable Real Data</button>
+                <button class="config-btn secondary" onclick="closeConfig()">Continue with Demo Mode</button>
             </div>
         </div>
     </div>
@@ -1438,6 +1815,7 @@
                     <div class="tab-group">
                         <button class="tab active" onclick="switchSearchType('flights')">FLIGHTS</button>
                         <button class="tab" onclick="switchSearchType('hotels')">HOTELS</button>
+                        <button class="tab" onclick="switchSearchType('restaurants')">RESTAURANTS</button>
                         <button class="tab" onclick="switchSearchType('multi')">MULTI-CITY</button>
                     </div>
 
@@ -1512,6 +1890,43 @@
                         <button class="search-btn" onclick="searchHotels()" id="hotelSearchBtn">SEARCH HOTELS</button>
 
                         <div id="hotelResults"></div>
+                    </div>
+
+                    <!-- Restaurants Search -->
+                    <div id="restaurantsSearch" class="search-type">
+                        <div class="form-group">
+                            <label class="form-label">LOCATION</label>
+                            <input type="text" id="restaurantCity" value="Paris" placeholder="CITY OR ADDRESS">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">CUISINE TYPE</label>
+                            <select id="cuisineType">
+                                <option value="">ALL CUISINES</option>
+                                <option value="french">FRENCH</option>
+                                <option value="italian">ITALIAN</option>
+                                <option value="japanese">JAPANESE</option>
+                                <option value="indian">INDIAN</option>
+                                <option value="mexican">MEXICAN</option>
+                                <option value="thai">THAI</option>
+                                <option value="vegetarian">VEGETARIAN</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">PRICE RANGE</label>
+                            <select id="priceRange">
+                                <option value="">ALL PRICES</option>
+                                <option value="budget">€ BUDGET FRIENDLY</option>
+                                <option value="moderate">€€ MODERATE</option>
+                                <option value="upscale">€€€ UPSCALE</option>
+                                <option value="fine">€€€€ FINE DINING</option>
+                            </select>
+                        </div>
+
+                        <button class="search-btn" onclick="searchRestaurants()" id="restaurantSearchBtn">FIND RESTAURANTS</button>
+
+                        <div id="restaurantResults"></div>
                     </div>
 
                     <!-- Multi-City Search -->
@@ -1590,16 +2005,17 @@
             }
         }
 
-        // Show config modal on first load
-        if (!savedConfig) {
-            document.getElementById('configModal').classList.remove('hidden');
-        }
+        // Don't show config modal on first load - let users explore demo mode first
 
         function showConfig() {
-            document.getElementById('configModal').classList.remove('hidden');
-            document.getElementById('amadeusKey').value = config.amadeusKey;
-            document.getElementById('amadeusSecret').value = config.amadeusSecret;
-            document.getElementById('openaiKey').value = config.openaiKey;
+            document.getElementById('configModal').classList.add('show');
+            document.getElementById('amadeusKey').value = config.amadeusKey || '';
+            document.getElementById('amadeusSecret').value = config.amadeusSecret || '';
+            document.getElementById('openaiKey').value = config.openaiKey || '';
+        }
+
+        function closeConfig() {
+            document.getElementById('configModal').classList.remove('show');
         }
 
         function saveConfig() {
@@ -1611,18 +2027,19 @@
                 config.demoMode = false;
                 localStorage.setItem('travelAiConfig', JSON.stringify(config));
                 document.getElementById('modeBadge').textContent = 'AI POWERED';
-                document.getElementById('configModal').classList.add('hidden');
+                closeConfig();
                 getAmadeusToken();
-                alert('API keys saved! You can now use real flight search and AI chat.');
+                addAIMessage('✅ API keys saved successfully! You now have access to real flight data, hotel search, and enhanced AI chat.');
+            } else if (config.amadeusKey && config.amadeusSecret) {
+                config.demoMode = false;
+                localStorage.setItem('travelAiConfig', JSON.stringify(config));
+                document.getElementById('modeBadge').textContent = 'LIVE DATA';
+                closeConfig();
+                getAmadeusToken();
+                addAIMessage('✅ Amadeus API configured! You now have real travel data. Add OpenAI key for enhanced AI chat.');
             } else {
-                alert('Please enter all API keys or use Demo Mode.');
+                alert('Please enter at least Amadeus API credentials, or close to continue with Demo Mode.');
             }
-        }
-
-        function useDemoMode() {
-            config.demoMode = true;
-            document.getElementById('configModal').classList.add('hidden');
-            document.getElementById('modeBadge').textContent = 'DEMO MODE';
         }
 
         // Get Amadeus access token
