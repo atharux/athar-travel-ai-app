@@ -896,3 +896,33 @@
             const msg = input.value.trim();
             if (!msg) return;
             
+            addMsg('user', msg);
+            input.value = '';
+            
+            setTimeout(() => {
+                addMsg('ai', 'I can help with that! Let me search for the best options.');
+            }, 800);
+        }
+
+        function addMsg(type, text) {
+            const container = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = 'message ' + type;
+            div.innerHTML = '<div class="content">' + text + '</div>';
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMsg();
+        });
+
+        if (!localStorage.getItem('visited')) {
+            setTimeout(() => {
+                addMsg('ai', '👋 Welcome! Click ❓ HELP to learn about API setup (optional - demo works great!)');
+                localStorage.setItem('visited', 'true');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
