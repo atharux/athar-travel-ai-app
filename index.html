@@ -986,97 +986,97 @@
                 if (type === 'flight') {
                     container.innerHTML = `
                         <div class="card" id="flight1">
-                            <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
-                                <strong style="color:#00ff87;">LUFTHANSA LH1234</strong>
-                                <strong style="color:#fff;font-size:24px;">€149</strong>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                                <strong style="color:#00ff87;font-size:14px;">LUFTHANSA LH1234</strong>
+                                <strong style="color:#fff;font-size:20px;">€149</strong>
                             </div>
-                            <div style="color:#888;font-size:13px;">
+                            <div style="color:#888;font-size:12px;line-height:1.5;">
                                 09:00 BER → 11:30 CDG<br>
                                 Duration: 2h 30m • Non-stop
                             </div>
-                            <button class="select-btn" onclick="selectItem('flight', 'flight1', 'Lufthansa LH1234', 'BER → CDG, 09:00-11:30', 149)">SELECT FLIGHT</button>
+                            <button class="select-btn" onclick="selectItem('flight', 'flight1', 'Lufthansa LH1234', 'BER → CDG, 09:00-11:30', 149)">SELECT</button>
                         </div>
                         <div class="card" id="flight2">
-                            <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
-                                <strong style="color:#00ff87;">AIR FRANCE AF5678</strong>
-                                <strong style="color:#fff;font-size:24px;">€175</strong>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                                <strong style="color:#00ff87;font-size:14px;">AIR FRANCE AF5678</strong>
+                                <strong style="color:#fff;font-size:20px;">€175</strong>
                             </div>
-                            <div style="color:#888;font-size:13px;">
+                            <div style="color:#888;font-size:12px;line-height:1.5;">
                                 14:15 BER → 16:45 CDG<br>
                                 Duration: 2h 30m • Non-stop
                             </div>
-                            <button class="select-btn" onclick="selectItem('flight', 'flight2', 'Air France AF5678', 'BER → CDG, 14:15-16:45', 175)">SELECT FLIGHT</button>
+                            <button class="select-btn" onclick="selectItem('flight', 'flight2', 'Air France AF5678', 'BER → CDG, 14:15-16:45', 175)">SELECT</button>
                         </div>
                         <div class="card" id="flight3">
-                            <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
-                                <strong style="color:#00ff87;">EASYJET U29012</strong>
-                                <strong style="color:#fff;font-size:24px;">€89</strong>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                                <strong style="color:#00ff87;font-size:14px;">EASYJET U29012</strong>
+                                <strong style="color:#fff;font-size:20px;">€89</strong>
                             </div>
-                            <div style="color:#888;font-size:13px;">
+                            <div style="color:#888;font-size:12px;line-height:1.5;">
                                 18:30 BER → 21:00 CDG<br>
                                 Duration: 2h 30m • Non-stop
                             </div>
-                            <button class="select-btn" onclick="selectItem('flight', 'flight3', 'EasyJet U29012', 'BER → CDG, 18:30-21:00', 89)">SELECT FLIGHT</button>
+                            <button class="select-btn" onclick="selectItem('flight', 'flight3', 'EasyJet U29012', 'BER → CDG, 18:30-21:00', 89)">SELECT</button>
                         </div>
                     `;
                 } else if (type === 'hotel') {
                     container.innerHTML = `
                         <div class="card" id="hotel1">
-                            <strong style="color:#00ff87;font-size:16px;">GRAND HOTEL CENTRAL</strong>
-                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                            <strong style="color:#00ff87;font-size:14px;">GRAND HOTEL CENTRAL</strong>
+                            <div style="color:#888;margin:8px 0;font-size:12px;line-height:1.5;">
                                 ⭐⭐⭐⭐⭐ 4.8 • City Center<br>
                                 Free WiFi • Pool • Spa
                             </div>
-                            <div style="color:#fff;font-size:20px;">€250/night</div>
-                            <button class="select-btn" onclick="selectItem('hotel', 'hotel1', 'Grand Hotel Central', '⭐⭐⭐⭐⭐ 4.8 • City Center', 250)">SELECT HOTEL</button>
+                            <div style="color:#fff;font-size:18px;margin-top:8px;">€250/night</div>
+                            <button class="select-btn" onclick="selectItem('hotel', 'hotel1', 'Grand Hotel Central', '⭐⭐⭐⭐⭐ 4.8 • City Center', 250)">SELECT</button>
                         </div>
                         <div class="card" id="hotel2">
-                            <strong style="color:#00ff87;font-size:16px;">MODERN CITY SUITES</strong>
-                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                            <strong style="color:#00ff87;font-size:14px;">MODERN CITY SUITES</strong>
+                            <div style="color:#888;margin:8px 0;font-size:12px;line-height:1.5;">
                                 ⭐⭐⭐⭐ 4.6 • Business District<br>
                                 Free WiFi • Gym • Breakfast
                             </div>
-                            <div style="color:#fff;font-size:20px;">€180/night</div>
-                            <button class="select-btn" onclick="selectItem('hotel', 'hotel2', 'Modern City Suites', '⭐⭐⭐⭐ 4.6 • Business District', 180)">SELECT HOTEL</button>
+                            <div style="color:#fff;font-size:18px;margin-top:8px;">€180/night</div>
+                            <button class="select-btn" onclick="selectItem('hotel', 'hotel2', 'Modern City Suites', '⭐⭐⭐⭐ 4.6 • Business District', 180)">SELECT</button>
                         </div>
                         <div class="card" id="hotel3">
-                            <strong style="color:#00ff87;font-size:16px;">BUDGET EXPRESS INN</strong>
-                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                            <strong style="color:#00ff87;font-size:14px;">BUDGET EXPRESS INN</strong>
+                            <div style="color:#888;margin:8px 0;font-size:12px;line-height:1.5;">
                                 ⭐⭐⭐ 4.2 • Near Airport<br>
                                 Free WiFi • Parking
                             </div>
-                            <div style="color:#fff;font-size:20px;">€95/night</div>
-                            <button class="select-btn" onclick="selectItem('hotel', 'hotel3', 'Budget Express Inn', '⭐⭐⭐ 4.2 • Near Airport', 95)">SELECT HOTEL</button>
+                            <div style="color:#fff;font-size:18px;margin-top:8px;">€95/night</div>
+                            <button class="select-btn" onclick="selectItem('hotel', 'hotel3', 'Budget Express Inn', '⭐⭐⭐ 4.2 • Near Airport', 95)">SELECT</button>
                         </div>
                     `;
                 } else {
                     container.innerHTML = `
                         <div class="card" id="restaurant1">
-                            <strong style="color:#00ff87;font-size:16px;">LE PETIT BISTRO</strong>
-                            <div style="color:#60efff;font-size:12px;margin-top:5px;">FRENCH CUISINE</div>
-                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                            <strong style="color:#00ff87;font-size:14px;">LE PETIT BISTRO</strong>
+                            <div style="color:#60efff;font-size:11px;margin-top:5px;">FRENCH CUISINE</div>
+                            <div style="color:#888;margin:8px 0;font-size:12px;line-height:1.5;">
                                 ⭐⭐⭐⭐⭐ 4.8 • €€€<br>
-                                Authentic French bistro with seasonal menu
+                                Authentic French bistro
                             </div>
-                            <button class="select-btn" onclick="selectItem('restaurant', 'restaurant1', 'Le Petit Bistro', 'French Cuisine • ⭐⭐⭐⭐⭐ 4.8', 45)">ADD TO TRIP</button>
+                            <button class="select-btn" onclick="selectItem('restaurant', 'restaurant1', 'Le Petit Bistro', 'French Cuisine • ⭐⭐⭐⭐⭐ 4.8', 45)">ADD</button>
                         </div>
                         <div class="card" id="restaurant2">
-                            <strong style="color:#00ff87;font-size:16px;">SUSHI ZEN MASTER</strong>
-                            <div style="color:#60efff;font-size:12px;margin-top:5px;">JAPANESE CUISINE</div>
-                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                            <strong style="color:#00ff87;font-size:14px;">SUSHI ZEN MASTER</strong>
+                            <div style="color:#60efff;font-size:11px;margin-top:5px;">JAPANESE CUISINE</div>
+                            <div style="color:#888;margin:8px 0;font-size:12px;line-height:1.5;">
                                 ⭐⭐⭐⭐⭐ 4.9 • €€€€<br>
-                                Traditional omakase experience
+                                Traditional omakase
                             </div>
-                            <button class="select-btn" onclick="selectItem('restaurant', 'restaurant2', 'Sushi Zen Master', 'Japanese Cuisine • ⭐⭐⭐⭐⭐ 4.9', 85)">ADD TO TRIP</button>
+                            <button class="select-btn" onclick="selectItem('restaurant', 'restaurant2', 'Sushi Zen Master', 'Japanese Cuisine • ⭐⭐⭐⭐⭐ 4.9', 85)">ADD</button>
                         </div>
                         <div class="card" id="restaurant3">
-                            <strong style="color:#00ff87;font-size:16px;">LA TRATTORIA</strong>
-                            <div style="color:#60efff;font-size:12px;margin-top:5px;">ITALIAN CUISINE</div>
-                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                            <strong style="color:#00ff87;font-size:14px;">LA TRATTORIA</strong>
+                            <div style="color:#60efff;font-size:11px;margin-top:5px;">ITALIAN CUISINE</div>
+                            <div style="color:#888;margin:8px 0;font-size:12px;line-height:1.5;">
                                 ⭐⭐⭐⭐ 4.6 • €€<br>
-                                Handmade pasta and wood-fired pizzas
+                                Handmade pasta
                             </div>
-                            <button class="select-btn" onclick="selectItem('restaurant', 'restaurant3', 'La Trattoria', 'Italian Cuisine • ⭐⭐⭐⭐ 4.6', 35)">ADD TO TRIP</button>
+                            <button class="select-btn" onclick="selectItem('restaurant', 'restaurant3', 'La Trattoria', 'Italian Cuisine • ⭐⭐⭐⭐ 4.6', 35)">ADD</button>
                         </div>
                     `;
                 }
