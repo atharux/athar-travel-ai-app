@@ -555,6 +555,134 @@
             font-family: 'Courier New', monospace;
         }
 
+        .select-btn {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 2px solid #00ff87;
+            color: #00ff87;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            margin-top: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .select-btn:hover {
+            background: #00ff87;
+            color: #0a0a0a;
+        }
+
+        .card.selected {
+            border-color: #00ff87;
+            background: rgba(0, 255, 135, 0.1);
+        }
+
+        .card.selected .select-btn {
+            background: #00ff87;
+            color: #0a0a0a;
+        }
+
+        .itinerary-builder {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(0, 255, 135, 0.05);
+            border: 2px solid #00ff87;
+        }
+
+        .itinerary-title {
+            color: #00ff87;
+            font-size: 16px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .itinerary-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 3px solid #00ff87;
+            padding: 15px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .itinerary-item-title {
+            color: #00ff87;
+            font-weight: 900;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .itinerary-item-details {
+            color: #ccc;
+        }
+
+        .itinerary-total {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .itinerary-total-label {
+            color: #888;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .itinerary-total-price {
+            color: #00ff87;
+            font-size: 32px;
+            font-weight: 900;
+        }
+
+        .complete-btn {
+            width: 100%;
+            padding: 18px;
+            background: #00ff87;
+            border: none;
+            color: #0a0a0a;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .complete-btn:hover {
+            background: #60efff;
+            transform: translateY(-2px);
+        }
+
+        .complete-btn:disabled {
+            background: #333;
+            color: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         @media (max-width: 968px) {
             .content {
                 grid-template-columns: 1fr;
@@ -660,11 +788,11 @@
         </div>
 
         <div class="progress">
-            <div class="progress-step active">Now Booking</div>
-            <div class="progress-step">Hotel</div>
-            <div class="progress-step">Confirm</div>
-            <div class="progress-step">Payment</div>
-            <div class="progress-step">Complete</div>
+            <div class="progress-step active" id="step0">Now Booking</div>
+            <div class="progress-step" id="step1">Hotel</div>
+            <div class="progress-step" id="step2">Dining</div>
+            <div class="progress-step" id="step3">Review</div>
+            <div class="progress-step" id="step4">Complete</div>
         </div>
 
         <div class="content">
@@ -678,54 +806,60 @@
                 </div>
 
                 <div class="tab-content active" id="tab0">
-                    <div class="form-group">
-                        <label class="form-label">From</label>
-                        <input type="text" id="from" value="BER" placeholder="Airport Code">
+                    <div class="search-form">
+                        <div class="form-group">
+                            <label class="form-label">From</label>
+                            <input type="text" id="from" value="BER" placeholder="Airport Code">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">To</label>
+                            <input type="text" id="to" value="CDG" placeholder="Airport Code">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date</label>
+                            <input type="date" id="date" value="2025-11-01">
+                        </div>
+                        <button class="search-btn" onclick="search('flight')">SEARCH FLIGHTS</button>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">To</label>
-                        <input type="text" id="to" value="CDG" placeholder="Airport Code">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Date</label>
-                        <input type="date" id="date" value="2025-11-01">
-                    </div>
-                    <button class="search-btn" onclick="search('flight')">SEARCH FLIGHTS</button>
                     <div id="flightResults" class="results"></div>
                 </div>
 
                 <div class="tab-content" id="tab1">
-                    <div class="form-group">
-                        <label class="form-label">City</label>
-                        <input type="text" id="city" value="Paris">
+                    <div class="search-form">
+                        <div class="form-group">
+                            <label class="form-label">City</label>
+                            <input type="text" id="city" value="Paris">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check-in</label>
+                            <input type="date" id="checkin" value="2025-11-01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Check-out</label>
+                            <input type="date" id="checkout" value="2025-11-03">
+                        </div>
+                        <button class="search-btn" onclick="search('hotel')">SEARCH HOTELS</button>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Check-in</label>
-                        <input type="date" id="checkin" value="2025-11-01">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Check-out</label>
-                        <input type="date" id="checkout" value="2025-11-03">
-                    </div>
-                    <button class="search-btn" onclick="search('hotel')">SEARCH HOTELS</button>
                     <div id="hotelResults" class="results"></div>
                 </div>
 
                 <div class="tab-content" id="tab2">
-                    <div class="form-group">
-                        <label class="form-label">Location</label>
-                        <input type="text" id="location" value="Paris">
+                    <div class="search-form">
+                        <div class="form-group">
+                            <label class="form-label">Location</label>
+                            <input type="text" id="location" value="Paris">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Cuisine</label>
+                            <select id="cuisine">
+                                <option>All</option>
+                                <option>French</option>
+                                <option>Italian</option>
+                                <option>Japanese</option>
+                            </select>
+                        </div>
+                        <button class="search-btn" onclick="search('restaurant')">FIND RESTAURANTS</button>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Cuisine</label>
-                        <select id="cuisine">
-                            <option>All</option>
-                            <option>French</option>
-                            <option>Italian</option>
-                            <option>Japanese</option>
-                        </select>
-                    </div>
-                    <button class="search-btn" onclick="search('restaurant')">FIND RESTAURANTS</button>
                     <div id="restaurantResults" class="results"></div>
                 </div>
             </div>
@@ -736,12 +870,28 @@
                 <div class="chat">
                     <div class="messages" id="messages">
                         <div class="message ai">
-                            <div class="content">Hello! I'm your AI travel assistant. How can I help you today?</div>
+                            <div class="content">Hello! I'm your AI travel assistant. Start by searching for flights.</div>
                         </div>
                     </div>
                     <div class="chat-input-group">
                         <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything...">
                         <button class="send-btn" onclick="sendMsg()">SEND</button>
+                    </div>
+                </div>
+
+                <div class="itinerary-builder" id="itinerary">
+                    <div class="itinerary-title">📋 YOUR TRIP</div>
+                    <div class="itinerary-items-container">
+                        <div id="itineraryItems">
+                            <div class="empty-state">Select items to build your itinerary</div>
+                        </div>
+                    </div>
+                    <div class="itinerary-footer">
+                        <div class="itinerary-total" id="totalSection" style="display: none;">
+                            <div class="itinerary-total-label">TOTAL COST</div>
+                            <div class="itinerary-total-price" id="totalPrice">€0</div>
+                        </div>
+                        <button class="complete-btn" id="completeBtn" onclick="completeBooking()" disabled>COMPLETE BOOKING →</button>
                     </div>
                 </div>
             </div>
@@ -752,6 +902,298 @@
         let config = { demoMode: true };
         const saved = localStorage.getItem('travelAiConfig');
         if (saved) config = JSON.parse(saved);
+
+        // Itinerary state
+        let itinerary = {
+            flight: null,
+            hotel: null,
+            restaurant: null
+        };
+
+        function showConfig() {
+            document.getElementById('configModal').classList.add('show');
+        }
+
+        function closeConfig() {
+            document.getElementById('configModal').classList.remove('show');
+        }
+
+        function saveConfig() {
+            config.amadeusKey = document.getElementById('amadeusKey').value.trim();
+            config.amadeusSecret = document.getElementById('amadeusSecret').value.trim();
+            config.openaiKey = document.getElementById('openaiKey').value.trim();
+            if (config.amadeusKey) {
+                config.demoMode = false;
+                document.getElementById('modeBadge').textContent = 'LIVE MODE';
+            }
+            localStorage.setItem('travelAiConfig', JSON.stringify(config));
+            closeConfig();
+            addMsg('ai', '✅ Settings saved!');
+        }
+
+        function showHelp() {
+            document.getElementById('helpModal').classList.add('show');
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').classList.remove('show');
+        }
+
+        function openConfigFromHelp() {
+            closeHelp();
+            showConfig();
+        }
+
+        function fillIntent(text) {
+            document.getElementById('intentInput').value = text;
+        }
+
+        function toggleVoice() {
+            if ('webkitSpeechRecognition' in window) {
+                const recognition = new webkitSpeechRecognition();
+                recognition.onresult = (e) => {
+                    document.getElementById('intentInput').value = e.results[0][0].transcript;
+                };
+                recognition.start();
+                document.getElementById('voiceBtn').classList.add('listening');
+                document.getElementById('voiceText').textContent = 'LISTENING...';
+                recognition.onend = () => {
+                    document.getElementById('voiceBtn').classList.remove('listening');
+                    document.getElementById('voiceText').textContent = 'SPEAK';
+                };
+            }
+        }
+
+        function startJourney() {
+            document.getElementById('startPage').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('active');
+        }
+
+        function switchTab(index) {
+            document.querySelectorAll('.tab').forEach((t, i) => {
+                t.classList.toggle('active', i === index);
+            });
+            document.querySelectorAll('.tab-content').forEach((c, i) => {
+                c.classList.toggle('active', i === index);
+            });
+        }
+
+        function search(type) {
+            const container = document.getElementById(type + 'Results');
+            container.innerHTML = '<div class="loading">SEARCHING...</div>';
+            
+            setTimeout(() => {
+                if (type === 'flight') {
+                    container.innerHTML = `
+                        <div class="card" id="flight1">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
+                                <strong style="color:#00ff87;">LUFTHANSA LH1234</strong>
+                                <strong style="color:#fff;font-size:24px;">€149</strong>
+                            </div>
+                            <div style="color:#888;font-size:13px;">
+                                09:00 BER → 11:30 CDG<br>
+                                Duration: 2h 30m • Non-stop
+                            </div>
+                            <button class="select-btn" onclick="selectItem('flight', 'flight1', 'Lufthansa LH1234', 'BER → CDG, 09:00-11:30', 149)">SELECT FLIGHT</button>
+                        </div>
+                        <div class="card" id="flight2">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
+                                <strong style="color:#00ff87;">AIR FRANCE AF5678</strong>
+                                <strong style="color:#fff;font-size:24px;">€175</strong>
+                            </div>
+                            <div style="color:#888;font-size:13px;">
+                                14:15 BER → 16:45 CDG<br>
+                                Duration: 2h 30m • Non-stop
+                            </div>
+                            <button class="select-btn" onclick="selectItem('flight', 'flight2', 'Air France AF5678', 'BER → CDG, 14:15-16:45', 175)">SELECT FLIGHT</button>
+                        </div>
+                        <div class="card" id="flight3">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:15px;">
+                                <strong style="color:#00ff87;">EASYJET U29012</strong>
+                                <strong style="color:#fff;font-size:24px;">€89</strong>
+                            </div>
+                            <div style="color:#888;font-size:13px;">
+                                18:30 BER → 21:00 CDG<br>
+                                Duration: 2h 30m • Non-stop
+                            </div>
+                            <button class="select-btn" onclick="selectItem('flight', 'flight3', 'EasyJet U29012', 'BER → CDG, 18:30-21:00', 89)">SELECT FLIGHT</button>
+                        </div>
+                    `;
+                } else if (type === 'hotel') {
+                    container.innerHTML = `
+                        <div class="card" id="hotel1">
+                            <strong style="color:#00ff87;font-size:16px;">GRAND HOTEL CENTRAL</strong>
+                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                                ⭐⭐⭐⭐⭐ 4.8 • City Center<br>
+                                Free WiFi • Pool • Spa
+                            </div>
+                            <div style="color:#fff;font-size:20px;">€250/night</div>
+                            <button class="select-btn" onclick="selectItem('hotel', 'hotel1', 'Grand Hotel Central', '⭐⭐⭐⭐⭐ 4.8 • City Center', 250)">SELECT HOTEL</button>
+                        </div>
+                        <div class="card" id="hotel2">
+                            <strong style="color:#00ff87;font-size:16px;">MODERN CITY SUITES</strong>
+                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                                ⭐⭐⭐⭐ 4.6 • Business District<br>
+                                Free WiFi • Gym • Breakfast
+                            </div>
+                            <div style="color:#fff;font-size:20px;">€180/night</div>
+                            <button class="select-btn" onclick="selectItem('hotel', 'hotel2', 'Modern City Suites', '⭐⭐⭐⭐ 4.6 • Business District', 180)">SELECT HOTEL</button>
+                        </div>
+                        <div class="card" id="hotel3">
+                            <strong style="color:#00ff87;font-size:16px;">BUDGET EXPRESS INN</strong>
+                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                                ⭐⭐⭐ 4.2 • Near Airport<br>
+                                Free WiFi • Parking
+                            </div>
+                            <div style="color:#fff;font-size:20px;">€95/night</div>
+                            <button class="select-btn" onclick="selectItem('hotel', 'hotel3', 'Budget Express Inn', '⭐⭐⭐ 4.2 • Near Airport', 95)">SELECT HOTEL</button>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="card" id="restaurant1">
+                            <strong style="color:#00ff87;font-size:16px;">LE PETIT BISTRO</strong>
+                            <div style="color:#60efff;font-size:12px;margin-top:5px;">FRENCH CUISINE</div>
+                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                                ⭐⭐⭐⭐⭐ 4.8 • €€€<br>
+                                Authentic French bistro with seasonal menu
+                            </div>
+                            <button class="select-btn" onclick="selectItem('restaurant', 'restaurant1', 'Le Petit Bistro', 'French Cuisine • ⭐⭐⭐⭐⭐ 4.8', 45)">ADD TO TRIP</button>
+                        </div>
+                        <div class="card" id="restaurant2">
+                            <strong style="color:#00ff87;font-size:16px;">SUSHI ZEN MASTER</strong>
+                            <div style="color:#60efff;font-size:12px;margin-top:5px;">JAPANESE CUISINE</div>
+                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                                ⭐⭐⭐⭐⭐ 4.9 • €€€€<br>
+                                Traditional omakase experience
+                            </div>
+                            <button class="select-btn" onclick="selectItem('restaurant', 'restaurant2', 'Sushi Zen Master', 'Japanese Cuisine • ⭐⭐⭐⭐⭐ 4.9', 85)">ADD TO TRIP</button>
+                        </div>
+                        <div class="card" id="restaurant3">
+                            <strong style="color:#00ff87;font-size:16px;">LA TRATTORIA</strong>
+                            <div style="color:#60efff;font-size:12px;margin-top:5px;">ITALIAN CUISINE</div>
+                            <div style="color:#888;margin:10px 0;font-size:13px;">
+                                ⭐⭐⭐⭐ 4.6 • €€<br>
+                                Handmade pasta and wood-fired pizzas
+                            </div>
+                            <button class="select-btn" onclick="selectItem('restaurant', 'restaurant3', 'La Trattoria', 'Italian Cuisine • ⭐⭐⭐⭐ 4.6', 35)">ADD TO TRIP</button>
+                        </div>
+                    `;
+                }
+            }, 1000);
+        }
+
+        function selectItem(type, cardId, name, details, price) {
+            // Deselect all cards of this type
+            document.querySelectorAll('#' + type + 'Results .card').forEach(card => {
+                card.classList.remove('selected');
+                const btn = card.querySelector('.select-btn');
+                btn.textContent = type === 'restaurant' ? 'ADD TO TRIP' : 'SELECT ' + type.toUpperCase();
+            });
+
+            // Select this card
+            const card = document.getElementById(cardId);
+            card.classList.add('selected');
+            const btn = card.querySelector('.select-btn');
+            btn.textContent = '✓ SELECTED';
+
+            // Update itinerary
+            itinerary[type] = { name, details, price };
+            updateItinerary();
+
+            // Update progress
+            updateProgress();
+
+            // AI feedback
+            if (type === 'flight') {
+                addMsg('ai', `Great choice! ${name} selected. Now let's find you a hotel.`);
+                setTimeout(() => switchTab(1), 1000);
+            } else if (type === 'hotel') {
+                addMsg('ai', `Perfect! ${name} looks excellent. Would you like to add restaurant recommendations?`);
+                setTimeout(() => switchTab(2), 1000);
+            } else {
+                addMsg('ai', `${name} added to your trip! Your itinerary is ready for review.`);
+            }
+        }
+
+        function updateItinerary() {
+            const container = document.getElementById('itineraryItems');
+            const items = [];
+            let total = 0;
+
+            if (itinerary.flight) {
+                items.push(`
+                    <div class="itinerary-item">
+                        <div class="itinerary-item-title">✈️ FLIGHT</div>
+                        <div class="itinerary-item-details">
+                            ${itinerary.flight.name}<br>
+                            ${itinerary.flight.details}
+                        </div>
+                        <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.flight.price}</div>
+                    </div>
+                `);
+                total += itinerary.flight.price;
+            }
+
+            if (itinerary.hotel) {
+                items.push(`
+                    <div class="itinerary-item">
+                        <div class="itinerary-item-title">🏨 HOTEL</div>
+                        <div class="itinerary-item-details">
+                            ${itinerary.hotel.name}<br>
+                            ${itinerary.hotel.details}
+                        </div>
+                        <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.hotel.price}/night</div>
+                    </div>
+                `);
+                total += itinerary.hotel.price * 2; // Assume 2 nights
+            }
+
+            if (itinerary.restaurant) {
+                items.push(`
+                    <div class="itinerary-item">
+                        <div class="itinerary-item-title">🍽 DINING</div>
+                        <div class="itinerary-item-details">
+                            ${itinerary.restaurant.name}<br>
+                            ${itinerary.restaurant.details}
+                        </div>
+                        <div style="color:#00ff87;font-weight:900;margin-top:8px;">~€${itinerary.restaurant.price}/person</div>
+                    </div>
+                `);
+                total += itinerary.restaurant.price;
+            }
+
+            if (items.length > 0) {
+                container.innerHTML = items.join('');
+                document.getElementById('totalSection').style.display = 'flex';
+                document.getElementById('totalPrice').textContent = '€' + total;
+                document.getElementById('completeBtn').disabled = false;
+            } else {
+                container.innerHTML = '<div class="empty-state">Select items to build your itinerary</div>';
+                document.getElementById('totalSection').style.display = 'none';
+                document.getElementById('completeBtn').disabled = true;
+            }
+        }
+
+        function updateProgress() {
+            let step = 0;
+            if (itinerary.flight) step = 1;
+            if (itinerary.hotel) step = 2;
+            if (itinerary.restaurant) step = 3;
+
+            document.querySelectorAll('.progress-step').forEach((el, i) => {
+                el.classList.toggle('active', i <= step);
+            });
+        }
+
+        function completeBooking() {
+            const total = document.getElementById('totalPrice').textContent;
+            addMsg('ai', `🎉 Excellent! Your trip is ready. Total cost: ${total}. In a real booking system, you'd proceed to payment now. Your itinerary looks fantastic!`);
+            
+            document.querySelectorAll('.progress-step').forEach(el => {
+                el.classList.add('active');
+            });
+        }
 
         function showConfig() {
             document.getElementById('configModal').classList.add('show');
@@ -919,7 +1361,7 @@
 
         if (!localStorage.getItem('visited')) {
             setTimeout(() => {
-                addMsg('ai', '👋 Welcome! Click ❓ HELP to learn about API setup (optional - demo works great!)');
+                addMsg('ai', '👋 Welcome! Start by searching for flights, then build your perfect trip step by step.');
                 localStorage.setItem('visited', 'true');
             }, 1000);
         }
