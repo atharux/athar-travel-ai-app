@@ -206,6 +206,17 @@
   @media (max-width:968px) {
     .panel { padding:18px; }
     .panel-title { font-size:16px; }
+      
+    /* ------------- itinerary panel ----------------*/  
+      .itinerary-actions {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+}
+.itinerary-actions .settings-btn {
+  width: 100%;
+}
+
   }
 </style>
 </head>
@@ -370,22 +381,31 @@
       <div class="panel" aria-label="Assistant and itinerary">
         <div class="panel-title">AI ASSISTANT</div>
 
-        <div class="itinerary-builder" id="itinerary">
-          <div class="itinerary-title">📋 YOUR TRIP</div>
-          <div class="itinerary-items-container">
-            <div id="itineraryItems"><div class="empty-state">Select items to build your itinerary</div></div>
-          </div>
-          <div class="itinerary-total" id="totalSection" style="display:none;">
-            <div class="itinerary-total-label">TOTAL COST</div>
-            <div class="itinerary-total-price" id="totalPrice">€0</div>
-          </div>
-
-          <button class="settings-btn" id="completeBtn" style="margin-top:12px; background:#00ff87; color:#0a0a0a;" onclick="completeBooking()" disabled>COMPLETE BOOKING →</button>
-          <button class="settings-btn" style="margin-top:8px; background:transparent; border:2px solid #333; color:#888;" onclick="resetTrip()">RESET TRIP</button>
-        </div>
-      </div>
-    </div>
+       <div class="itinerary-builder" id="itinerary">
+  <div class="itinerary-title">📋 YOUR TRIP</div>
+  <div class="itinerary-items-container">
+    <div id="itineraryItems"><div class="empty-state">Select items to build your itinerary</div></div>
   </div>
+  <div class="itinerary-total" id="totalSection" style="display:none;">
+    <div class="itinerary-total-label">TOTAL COST</div>
+    <div class="itinerary-total-price" id="totalPrice">€0</div>
+  </div>
+
+  <!-- move these two lines so they are AFTER the totalSection -->
+  <div class="itinerary-actions">
+    <button class="settings-btn" id="completeBtn"
+      style="margin-top:12px;background:#00ff87;color:#0a0a0a;width:100%;"
+      onclick="completeBooking()" disabled>
+      COMPLETE BOOKING →
+    </button>
+    <button class="settings-btn"
+      style="margin-top:8px;background:transparent;border:2px solid #333;color:#888;width:100%;"
+      onclick="resetTrip()">
+      RESET TRIP
+    </button>
+  </div>
+</div>
+
 
   <!-- Chat backdrop & modal -->
   <div class="chat-backdrop" id="chatBackdrop" onclick="closeChat()" aria-hidden="true"></div>
