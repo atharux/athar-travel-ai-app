@@ -493,24 +493,20 @@
     return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  function renderCard(type,item){
-  return item.options.map(opt=>`
-    <div class="card" id="${item.id}-${opt.type}"
-         data-type="${type}" data-name="${item.name} (${opt.label})"
-         data-details="${item.details}" data-price="${opt.price}"
-         data-refundable="${opt.refundable}" data-changeable="${opt.changeable}"
-         onclick="selectItem('${type}','${item.id}-${opt.type}',${opt.price})">
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-        <strong style="color:#00ff87;">${item.name}</strong>
-        <span style="color:#fff;">€${opt.price}</span>
+  function renderCard(type, item) {
+    const safeName = escapeAttr(item.name);
+    const safeDetails = escapeAttr(item.details);
+    return `
+      <div class="card" id="${item.id}" data-type="${type}" data-price="${item.price}" data-name="${safeName}" data-details="${safeDetails}"
+           onclick="selectItem('${type}','${item.id}', ${item.price})" role="button" tabindex="0" aria-pressed="false">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+          <strong style="color:#00ff87;font-size:14px;">${item.name}</strong>
+          <strong style="color:#fff;font-size:18px;">€${item.price}</strong>
+        </div>
+        <div style="color:#888;font-size:12px;line-height:1.4;">${item.details}</div>
       </div>
-      <div style="color:#888;font-size:12px;">${item.details}</div>
-      <div style="margin-top:6px;font-size:11px;color:${opt.refundable?'#60efff':'#ff8080'};">
-        ${opt.refundable?'Refundable / Changeable':'Non-Refundable'}
-      </div>
-    </div>
-  `).join('');
-}
+    `;
+  }
 
   /* ---------- Selection logic ---------- */
   function selectItem(type, cardId, price) {
@@ -555,25 +551,21 @@
     let total = 0;
 
     if (itinerary.flight) {
-  const f=itinerary.flight;
-  parts.push(`
-    <div class="itinerary-item">
-      <div class="itinerary-item-title">✈️ FLIGHT</div>
-      <div class="itinerary-item-details">${f.name}<br>${f.details}</div>
-      <div style="color:${f.refundable?'#60efff':'#ff8080'};font-size:11px;">
-        ${f.refundable?'Refundable / Changeable':'Non-Refundable'}
-      </div>
-      <div style="color:#00ff87;font-weight:900;">€${f.price}</div>
-    </div>`);
-}
+      parts.push(`
+        <div class="itinerary-item">
+          <div class="itinerary-item-title">✈️ FLIGHT</div>
+          <div class="itinerary-item-details">${itinerary.flight.name}<br>${itinerary.flight.details}</div>
+          <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.flight.price}</div>
+        </div>
+      `);
+      total += itinerary.flight.price;
+    }
 
     if (itinerary.hotel) {
       parts.push(`
         <div class="itinerary-item">
           <div class="itinerary-item-title">🏨 HOTEL</div>
           <div class="itinerary-item-details">${itinerary.hotel.name}<br>${itinerary.hotel.details}</div>
-          <div style="color:${f.refundable?'#60efff':'#ff8080'};font-size:11px;">
-            ${f.refundable?'Refundable / Changeable':'Non-Refundable'}
           <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.hotel.price}/night</div>
         </div>
       `);
@@ -603,15 +595,16 @@
     }
   }
 
-function resetTrip() {
-  if (!confirm("Clear your entire itinerary?")) return;
-  itinerary = { flight:null, hotel:null, restaurant:null };
-  document.querySelectorAll('.card.selected').forEach(c=>c.classList.remove('selected'));
-  updateItinerary();
-  updateProgress();
-  addMsg('ai',"Trip reset — start planning again!");
-}
-
+  function resetTrip() {
+    itinerary = { flight: null, hotel: null, restaurant: null };
+    document.querySelectorAll('.card').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-pressed','false'); });
+    document.getElementById('itineraryItems').innerHTML = '<div class="empty-state">Select items to build your itinerary</div>';
+    document.getElementById('totalSection').style.display = 'none';
+    document.getElementById('totalPrice').textContent = '€0';
+    document.getElementById('completeBtn').disabled = true;
+    document.querySelectorAll('.progress-step').forEach((el,i) => el.classList.toggle('active', i === 0));
+    addMsg('ai', 'Trip reset. Start your search again!');
+  }
 
   function updateProgress() {
     let step = 0;
@@ -628,47 +621,11 @@ function resetTrip() {
     });
   }
 
-  function completeBooking(){
-  addMsg('ai',"🎉 Booking confirmed! You can still change or cancel parts below.");
-  document.querySelectorAll('.progress-step').forEach(el=>el.classList.add('active'));
-  const items=document.querySelectorAll('.itinerary-item');
-  items.forEach(it=>{
-    if(!it.querySelector('.change-btn')){
-      const change=document.createElement('button');
-      change.textContent='Change';
-      change.className='select-btn change-btn';
-      change.onclick=()=>handleChange(it);
-      const cancel=document.createElement('button');
-      cancel.textContent='Cancel';
-      cancel.className='select-btn cancel-btn';
-      cancel.onclick=()=>handleCancel(it);
-      it.appendChild(change);
-      it.appendChild(cancel);
-    }
-  });
-}
-
-function handleChange(el){
-  const title=el.querySelector('.itinerary-item-title').textContent;
-  addMsg('ai',`Okay, let’s change your ${title.toLowerCase()}.`);
-  // bring user back to corresponding tab
-  if(title.includes('FLIGHT')) switchTab(0);
-  if(title.includes('HOTEL')) switchTab(1);
-  if(title.includes('DINING')) switchTab(2);
-}
-
-function handleCancel(el){
-  const title=el.querySelector('.itinerary-item-title').textContent;
-  if(!confirm(`Cancel your ${title.toLowerCase()}?`)) return;
-  if(title.includes('FLIGHT')) itinerary.flight=null;
-  if(title.includes('HOTEL')) itinerary.hotel=null;
-  if(title.includes('DINING')) itinerary.restaurant=null;
-  el.remove();
-  updateItinerary();
-  updateProgress();
-  addMsg('ai',`${title} cancelled.`);
-}
-
+  function completeBooking() {
+    const total = document.getElementById('totalPrice').textContent;
+    addMsg('ai', `🎉 Excellent! Your trip is ready. Total cost: ${total}.`);
+    document.querySelectorAll('.progress-step').forEach(el => el.classList.add('active'));
+  }
 
   /* ---------- Chat open/close / FAB ---------- */
   const chatModal = document.getElementById('chatModal');
