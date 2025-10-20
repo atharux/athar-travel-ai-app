@@ -216,7 +216,62 @@
 .itinerary-actions .settings-btn {
   width: 100%;
 }
+.itinerary-builder {
+  display: flex;
+  flex-direction: column;
+}
 
+.itinerary-total {
+  margin-top: 12px;
+}
+
+.itinerary-buttons {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+}
+
+.itinerary-buttons button {
+  width: 100%;
+  position: static;       /* ensures they stay in flow */
+  align-self: stretch;
+}
+
+      /* ---- FIX itinerary stacking on all screen widths ---- */
+.panel[aria-label="Assistant and itinerary"] {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+#itinerary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.itinerary-items-container {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.itinerary-total {
+  margin-top: 12px;
+}
+
+.itinerary-buttons {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+}
+
+.itinerary-buttons button {
+  width: 100%;
+  position: static;
+  align-self: stretch;
+}
+
+      
   }
 </style>
 </head>
@@ -381,30 +436,36 @@
       <div class="panel" aria-label="Assistant and itinerary">
         <div class="panel-title">AI ASSISTANT</div>
 
-       <div class="itinerary-builder" id="itinerary">
+   <div class="itinerary-builder" id="itinerary">
   <div class="itinerary-title">📋 YOUR TRIP</div>
+
   <div class="itinerary-items-container">
-    <div id="itineraryItems"><div class="empty-state">Select items to build your itinerary</div></div>
+    <div id="itineraryItems">
+      <div class="empty-state">Select items to build your itinerary</div>
+    </div>
   </div>
+
   <div class="itinerary-total" id="totalSection" style="display:none;">
     <div class="itinerary-total-label">TOTAL COST</div>
     <div class="itinerary-total-price" id="totalPrice">€0</div>
   </div>
 
-  <!-- move these two lines so they are AFTER the totalSection -->
-  <div class="itinerary-actions">
-    <button class="settings-btn" id="completeBtn"
-      style="margin-top:12px;background:#00ff87;color:#0a0a0a;width:100%;"
+  <!-- ✅ new wrapper -->
+  <div class="itinerary-buttons">
+    <button id="completeBtn"
+      class="settings-btn"
+      style="background:#00ff87;color:#0a0a0a;margin-top:12px;"
       onclick="completeBooking()" disabled>
       COMPLETE BOOKING →
     </button>
     <button class="settings-btn"
-      style="margin-top:8px;background:transparent;border:2px solid #333;color:#888;width:100%;"
+      style="margin-top:8px;background:transparent;border:2px solid #333;color:#888;"
       onclick="resetTrip()">
       RESET TRIP
     </button>
   </div>
 </div>
+
 
 
   <!-- Chat backdrop & modal -->
