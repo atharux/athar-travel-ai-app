@@ -105,6 +105,10 @@
   }
   .card.selected { border-color:#00ff87; background: rgba(0,255,135,0.12); box-shadow: 0 6px 18px rgba(0,255,135,0.04); }
 
+  .badge-refund { font-size:11px; padding:6px 8px; border-radius:6px; font-weight:900; text-transform:uppercase; letter-spacing:1px; display:inline-block; margin-top:8px; }
+  .badge-refund.true { color:#60efff; border:1px solid rgba(96,239,255,0.12); background: rgba(96,239,255,0.02); }
+  .badge-refund.false { color:#ff8080; border:1px solid rgba(255,128,128,0.08); background: rgba(255,128,128,0.02); }
+
   /* keep select-btn style available for compatibility */
   .select-btn { width:100%; padding:10px; background:transparent; border:2px solid #00ff87; color:#00ff87; font-weight:900; cursor:pointer; font-size:11px; margin-top:12px; }
   .select-btn:hover { background:#00ff87; color:#0a0a0a; }
@@ -187,7 +191,13 @@
   .itinerary-total { margin-top:10px; display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid #222; }
   .itinerary-total-price { color:#00ff87; font-weight:900; font-size:18px; }
 
-  /* animations for progress step glow are handled via CSS keyframe on .progress-step.active */
+  /* ---------- Change/Cancel subtle buttons ---------- */
+  .tiny-btn {
+    display:inline-block; padding:8px 10px; margin-left:8px; border-radius:6px; background:transparent; border:1px solid #666; color:#ccc; font-weight:700; font-size:12px; cursor:pointer;
+    transition: all 180ms ease;
+  }
+  .tiny-btn:hover { box-shadow: 0 6px 14px rgba(0,0,0,0.6), 0 6px 12px rgba(100,100,100,0.04); border-color:#999; color:#fff; transform: translateY(-2px); }
+  .tiny-btn:focus { outline:2px solid rgba(255,255,255,0.06); }
 
   /* ---------- Accessibility helpers ---------- */
   .sr-only { position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
@@ -458,48 +468,126 @@
     document.querySelectorAll('.tab-content').forEach((c,i)=> c.classList.toggle('active', i===index));
   }
 
-  /* ---------- Search & render ---------- */
+  /* ---------- Search & render (with options) ---------- */
   function search(type) {
     const container = document.getElementById(type + 'Results');
     container.innerHTML = '<div class="loading">SEARCHING...</div>';
     setTimeout(() => {
       if (type === 'flight') {
+        // each flight now has two "options" (standard vs flexible)
         const flights = [
-          { id: 'flight1', name: 'Lufthansa LH1234', details: '09:00 BER → 11:30 CDG • Duration: 2h 30m • Non-stop', price: 149 },
-          { id: 'flight2', name: 'Air France AF5678', details: '14:15 BER → 16:45 CDG • Duration: 2h 30m • Non-stop', price: 175 },
-          { id: 'flight3', name: 'EasyJet U29012', details: '18:30 BER → 21:00 CDG • Duration: 2h 30m • Non-stop', price: 89 }
+          {
+            id: 'flight1',
+            name: 'Lufthansa LH1234',
+            details: '09:00 BER → 11:30 CDG • Duration: 2h 30m • Non-stop',
+            options: [
+              { type: 'standard', label: 'Standard – Non-Refundable', price: 149, refundable: false, changeable: false },
+              { type: 'flex', label: 'Flexible – Refundable/Changeable', price: 189, refundable: true, changeable: true }
+            ]
+          },
+          {
+            id: 'flight2',
+            name: 'Air France AF5678',
+            details: '14:15 BER → 16:45 CDG • Duration: 2h 30m • Non-stop',
+            options: [
+              { type: 'standard', label: 'Standard – Non-Refundable', price: 175, refundable: false, changeable: false },
+              { type: 'flex', label: 'Flexible – Refundable/Changeable', price: 229, refundable: true, changeable: true }
+            ]
+          },
+          {
+            id: 'flight3',
+            name: 'EasyJet U29012',
+            details: '18:30 BER → 21:00 CDG • Duration: 2h 30m • Non-stop',
+            options: [
+              { type: 'standard', label: 'Standard – Non-Refundable', price: 89, refundable: false, changeable: false },
+              { type: 'flex', label: 'Flexible – Refundable/Changeable', price: 129, refundable: true, changeable: true }
+            ]
+          }
         ];
-        container.innerHTML = flights.map(f => renderCard('flight', f)).join('');
+        container.innerHTML = flights.map(f => renderCardOptions('flight', f)).join('');
       } else if (type === 'hotel') {
         const hotels = [
-          { id: 'hotel1', name: 'Grand Hotel Central', details: '⭐⭐⭐⭐⭐ 4.8 • City Center • Free WiFi • Pool • Spa', price: 250 },
-          { id: 'hotel2', name: 'Modern City Suites', details: '⭐⭐⭐⭐ 4.6 • Business District • Free WiFi • Gym • Breakfast', price: 180 },
-          { id: 'hotel3', name: 'Budget Express Inn', details: '⭐⭐⭐ 4.2 • Near Airport • Free WiFi • Parking', price: 95 }
+          {
+            id:'hotel1',
+            name:'Grand Hotel Central',
+            details:'⭐⭐⭐⭐⭐ 4.8 • City Center • Free WiFi • Pool • Spa',
+            options:[
+              { type: 'standard', label: 'Standard – Non-Refundable', price: 250, refundable:false, changeable:false },
+              { type: 'flex', label: 'Flexible – Free Cancellation', price: 295, refundable:true, changeable:true }
+            ]
+          },
+          {
+            id:'hotel2',
+            name:'Modern City Suites',
+            details:'⭐⭐⭐⭐ 4.6 • Business District • Free WiFi • Gym • Breakfast',
+            options:[
+              { type:'standard', label:'Standard – Non-Refundable', price:180, refundable:false, changeable:false },
+              { type:'flex', label:'Flexible – Free Cancellation', price:220, refundable:true, changeable:true }
+            ]
+          },
+          {
+            id:'hotel3',
+            name:'Budget Express Inn',
+            details:'⭐⭐⭐ 4.2 • Near Airport • Free WiFi • Parking',
+            options:[
+              { type:'standard', label:'Standard – Non-Refundable', price:95, refundable:false, changeable:false },
+              { type:'flex', label:'Flexible – Free Cancellation', price:115, refundable:true, changeable:true }
+            ]
+          }
         ];
-        container.innerHTML = hotels.map(h => renderCard('hotel', h)).join('');
+        container.innerHTML = hotels.map(h => renderCardOptions('hotel', h)).join('');
       } else if (type === 'restaurant') {
         const restaurants = [
           { id: 'restaurant1', name: 'Le Petit Bistro', details: 'French • ⭐⭐⭐⭐⭐ 4.8 • Authentic bistro', price: 45 },
           { id: 'restaurant2', name: 'Sushi Zen Master', details: 'Japanese • ⭐⭐⭐⭐⭐ 4.9 • Traditional omakase', price: 85 },
           { id: 'restaurant3', name: 'La Trattoria', details: 'Italian • ⭐⭐⭐⭐ 4.6 • Handmade pasta', price: 35 }
         ];
-        container.innerHTML = restaurants.map(r => renderCard('restaurant', r)).join('');
+        container.innerHTML = restaurants.map(r => renderSingle('restaurant', r)).join('');
       }
-      updateItinerary(); // ensure state reflects any preselected items
+      updateItinerary(); // ensure UI reflects currently selected items
     }, 700);
   }
 
+  // small utility to escape attribute embeddings
   function escapeAttr(s){
     return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  function renderCard(type, item) {
+  // render multiple option cards for a product (flight/hotel)
+  function renderCardOptions(type, item) {
+    return item.options.map(opt => {
+      const cardId = `${item.id}-${opt.type}`;
+      const safeName = escapeAttr(item.name + ' — ' + opt.label);
+      const safeDetails = escapeAttr(item.details);
+      return `
+        <div class="card" id="${cardId}" data-type="${type}" data-price="${opt.price}" data-name="${escapeAttr(item.name)}" data-details="${safeDetails}"
+             data-refundable="${opt.refundable}" data-changeable="${opt.changeable}" data-optiontype="${opt.type}"
+             onclick="selectItem('${type}','${cardId}', ${opt.price})" role="button" tabindex="0" aria-pressed="false">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <div style="display:flex;flex-direction:column;">
+              <strong style="color:#00ff87;font-size:14px;">${item.name}</strong>
+              <span style="font-size:11px;color:#ccc;margin-top:6px;">${opt.label}</span>
+            </div>
+            <div style="text-align:right;">
+              <strong style="color:#fff;font-size:18px;">€${opt.price}</strong>
+              <div class="badge-refund ${opt.refundable ? 'true':'false'}" style="margin-top:8px;">${opt.refundable ? 'Refundable' : 'Non-Refundable'}</div>
+            </div>
+          </div>
+          <div style="color:#888;font-size:12px;line-height:1.4;">${item.details}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // render single option cards (restaurants)
+  function renderSingle(type, item) {
+    const cardId = item.id;
     const safeName = escapeAttr(item.name);
     const safeDetails = escapeAttr(item.details);
     return `
-      <div class="card" id="${item.id}" data-type="${type}" data-price="${item.price}" data-name="${safeName}" data-details="${safeDetails}"
-           onclick="selectItem('${type}','${item.id}', ${item.price})" role="button" tabindex="0" aria-pressed="false">
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+      <div class="card" id="${cardId}" data-type="${type}" data-price="${item.price}" data-name="${safeName}" data-details="${safeDetails}"
+           data-refundable="false" data-changeable="true" onclick="selectItem('${type}','${cardId}', ${item.price})" role="button" tabindex="0" aria-pressed="false">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
           <strong style="color:#00ff87;font-size:14px;">${item.name}</strong>
           <strong style="color:#fff;font-size:18px;">€${item.price}</strong>
         </div>
@@ -524,16 +612,22 @@
 
     const name = card.dataset.name || '';
     const details = card.dataset.details || '';
+    const refundable = (card.dataset.refundable === 'true');
+    const changeable = (card.dataset.changeable === 'true');
+    const optionType = card.dataset.optiontype || '';
 
-    itinerary[type] = { name, details, price };
+    // Save to itinerary
+    itinerary[type] = { name, details, price, refundable, changeable, optionType, cardId };
+
     updateItinerary();
     updateProgress();
 
+    // assistant contextual replies & tab auto-advance
     if (type === 'flight') {
-      addMsg('ai', `Great choice — ${name} selected. Let's find a hotel next.`);
+      addMsg('ai', `Great choice — ${name} selected (${optionType}). Let's find a hotel next.`);
       setTimeout(() => switchTab(1), 700);
     } else if (type === 'hotel') {
-      addMsg('ai', `Perfect — ${name} looks great. Would you like dining suggestions?`);
+      addMsg('ai', `Perfect — ${name} selected (${optionType}). Would you like dining suggestions?`);
       setTimeout(() => switchTab(2), 700);
     } else {
       addMsg('ai', `${name} added to your trip!`);
@@ -552,9 +646,12 @@
 
     if (itinerary.flight) {
       parts.push(`
-        <div class="itinerary-item">
+        <div class="itinerary-item" id="it-flight">
           <div class="itinerary-item-title">✈️ FLIGHT</div>
           <div class="itinerary-item-details">${itinerary.flight.name}<br>${itinerary.flight.details}</div>
+          <div style="margin-top:6px;font-size:12px;color:${itinerary.flight.refundable ? '#60efff':'#ff8080'};">
+            ${itinerary.flight.refundable ? 'Refundable / Changeable' : 'Non-Refundable'}
+          </div>
           <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.flight.price}</div>
         </div>
       `);
@@ -563,9 +660,12 @@
 
     if (itinerary.hotel) {
       parts.push(`
-        <div class="itinerary-item">
+        <div class="itinerary-item" id="it-hotel">
           <div class="itinerary-item-title">🏨 HOTEL</div>
           <div class="itinerary-item-details">${itinerary.hotel.name}<br>${itinerary.hotel.details}</div>
+          <div style="margin-top:6px;font-size:12px;color:${itinerary.hotel.refundable ? '#60efff':'#ff8080'};">
+            ${itinerary.hotel.refundable ? 'Refundable / Changeable' : 'Non-Refundable'}
+          </div>
           <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.hotel.price}/night</div>
         </div>
       `);
@@ -574,9 +674,12 @@
 
     if (itinerary.restaurant) {
       parts.push(`
-        <div class="itinerary-item">
+        <div class="itinerary-item" id="it-restaurant">
           <div class="itinerary-item-title">🍽 DINING</div>
           <div class="itinerary-item-details">${itinerary.restaurant.name}<br>${itinerary.restaurant.details}</div>
+          <div style="margin-top:6px;font-size:12px;color:#60efff;">
+            ${itinerary.restaurant.changeable ? 'Changeable' : ''}
+          </div>
           <div style="color:#00ff87;font-weight:900;margin-top:8px;">~€${itinerary.restaurant.price}/person</div>
         </div>
       `);
@@ -596,6 +699,7 @@
   }
 
   function resetTrip() {
+    if (!confirm('Clear your entire itinerary? This cannot be undone.')) return;
     itinerary = { flight: null, hotel: null, restaurant: null };
     document.querySelectorAll('.card').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-pressed','false'); });
     document.getElementById('itineraryItems').innerHTML = '<div class="empty-state">Select items to build your itinerary</div>';
@@ -614,17 +718,101 @@
     document.querySelectorAll('.progress-step').forEach((el,i) => {
       const wasActive = el.classList.contains('active');
       el.classList.toggle('active', i <= step);
-      // small pulse if it's newly active
       if (!wasActive && el.classList.contains('active')) {
         el.animate([{ boxShadow:'0 0 0 rgba(0,255,135,0)' }, { boxShadow:'0 10px 30px rgba(0,255,135,0.08)' }, { boxShadow:'0 0 0 rgba(0,255,135,0)' }], { duration:700, easing:'ease' });
       }
     });
   }
 
+  /* ---------- Booking complete & Change/Cancel buttons ---------- */
   function completeBooking() {
     const total = document.getElementById('totalPrice').textContent;
-    addMsg('ai', `🎉 Excellent! Your trip is ready. Total cost: ${total}.`);
+    addMsg('ai', `🎉 Booking confirmed! Total cost: ${total}. You can still change or cancel any part below.`);
     document.querySelectorAll('.progress-step').forEach(el => el.classList.add('active'));
+    // add change/cancel buttons to itinerary items
+    addChangeCancelButtons();
+  }
+
+  function addChangeCancelButtons() {
+    // For each itinerary item (flight/hotel/restaurant), append Change & Cancel buttons if not present
+    const items = [
+      { id: 'it-flight', type: 'flight' },
+      { id: 'it-hotel', type: 'hotel' },
+      { id: 'it-restaurant', type: 'restaurant' }
+    ];
+    items.forEach(item => {
+      const el = document.getElementById(item.id);
+      if (!el) return;
+      // avoid adding multiple times
+      if (el.querySelector('.change-btn')) return;
+
+      const changeBtn = document.createElement('button');
+      changeBtn.className = 'tiny-btn change-btn';
+      changeBtn.textContent = 'Change';
+      changeBtn.onclick = () => handleChange(item.type);
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'tiny-btn cancel-btn';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = () => handleCancel(item.type);
+
+      const wrapper = document.createElement('div');
+      wrapper.style.marginTop = '10px';
+      wrapper.appendChild(changeBtn);
+      wrapper.appendChild(cancelBtn);
+      el.appendChild(wrapper);
+    });
+  }
+
+  function handleChange(type) {
+    // Remove current selection to allow re-selection
+    if (type === 'flight') {
+      itinerary.flight = null;
+      document.querySelectorAll('#flightResults .card').forEach(c => c.classList.remove('selected'));
+      switchTab(0);
+      addMsg('ai', 'Okay — change your flight. Select a different option from the Flights tab.');
+    } else if (type === 'hotel') {
+      itinerary.hotel = null;
+      document.querySelectorAll('#hotelResults .card').forEach(c => c.classList.remove('selected'));
+      switchTab(1);
+      addMsg('ai', 'Okay — change your hotel. Select a different option from the Hotels tab.');
+    } else if (type === 'restaurant') {
+      itinerary.restaurant = null;
+      document.querySelectorAll('#restaurantResults .card').forEach(c => c.classList.remove('selected'));
+      switchTab(2);
+      addMsg('ai', 'Okay — change your dining choice. Select a different option from the Food tab.');
+    }
+    // Update UI/itinerary after removing selection
+    updateItinerary();
+    updateProgress();
+  }
+
+  function handleCancel(type) {
+    const mapping = { flight:'a flight', hotel:'a hotel', restaurant:'a restaurant' };
+    if (!confirm(`Cancel ${mapping[type]}?`)) return;
+    if (type === 'flight') {
+      // deselect card if present
+      if (itinerary.flight && itinerary.flight.cardId) {
+        const c = document.getElementById(itinerary.flight.cardId);
+        if (c) c.classList.remove('selected');
+      }
+      itinerary.flight = null;
+    } else if (type === 'hotel') {
+      if (itinerary.hotel && itinerary.hotel.cardId) {
+        const c = document.getElementById(itinerary.hotel.cardId);
+        if (c) c.classList.remove('selected');
+      }
+      itinerary.hotel = null;
+    } else if (type === 'restaurant') {
+      if (itinerary.restaurant && itinerary.restaurant.cardId) {
+        const c = document.getElementById(itinerary.restaurant.cardId);
+        if (c) c.classList.remove('selected');
+      }
+      itinerary.restaurant = null;
+    }
+    updateItinerary();
+    updateProgress();
+    addMsg('ai', `${mapping[type]} cancelled.`);
   }
 
   /* ---------- Chat open/close / FAB ---------- */
@@ -639,8 +827,7 @@
     chatModal.setAttribute('aria-hidden','false');
     chatBackdrop.setAttribute('aria-hidden','false');
     chatBackdrop.style.pointerEvents = 'auto';
-    fab.setAttribute('aria-hidden','true'); // hide or move up via CSS
-    // focus input
+    fab.setAttribute('aria-hidden','true');
     setTimeout(()=> { const input = document.getElementById('chatInput'); input.focus(); }, 300);
   }
 
@@ -700,25 +887,19 @@
   }
 
   /* ---------- Init & welcome ---------- */
-  // auto-open the app and chat on first startJourney call; we also auto-open chat if mainApp already visible
   window.addEventListener('load', () => {
-    // keep previous "visited" welcome for main UI
     if (!localStorage.getItem('visited')) {
       setTimeout(()=> addMsg('ai','👋 Welcome! Start by searching for flights, then build your perfect trip step by step.'), 900);
       localStorage.setItem('visited','true');
     }
-    // Insert initial greeting for chat
+    // Insert initial greeting for chat & open it
     setTimeout(()=> {
       addMsg('ai', "Welcome back! Let's plan your next trip");
-      // If user already passed start page (e.g., testing) open chat
-      // We open chat automatically only when user clicks Begin or if mainApp is active.
-      // But the user asked to open chat on launch — if the Start Page is visible we still open chat so it's ready.
       openChat();
     }, 600);
   });
 
-  /* ---------- Keyboard / focus and small accessibility niceties ---------- */
-  // Allow Enter on cards to select (for keyboard users)
+  /* ---------- Keyboard accessibility for cards ---------- */
   document.addEventListener('keydown', (e) => {
     const active = document.activeElement;
     if (active && active.classList && active.classList.contains('card') && (e.key === 'Enter' || e.key === ' ')) {
@@ -730,7 +911,7 @@
     }
   });
 
-  /* ---------- Make some functions available globally for inline onclicks ---------- */
+  /* ---------- Make functions available globally ---------- */
   window.search = search;
   window.selectItem = selectItem;
   window.switchTab = switchTab;
