@@ -16,7 +16,7 @@
     -moz-osx-font-smoothing:grayscale;
     min-height: 100vh;
     overflow-x: hidden;
-    padding-bottom: env(safe-area-inset-bottom); /* safe area */
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* ---------- Top Right Buttons ---------- */
@@ -29,6 +29,15 @@
   }
   .help-btn { right: 160px; }
   .settings-btn:hover { border-color:#00ff87; color:#00ff87; }
+
+  /* FIX: Override for itinerary buttons specifically */
+  .itinerary-btn {
+    position: static !important;
+    right: auto !important;
+    top: auto !important;
+    width: 100%;
+    margin-top: 12px;
+  }
 
   /* ---------- Modals ---------- */
   .modal { position:fixed; top:0; left:0; width:100%; height:100%; display:none; align-items:center; justify-content:center; z-index:1200; }
@@ -93,6 +102,10 @@
 
   .loading { text-align:center; padding:30px; color:#00ff87; font-size:13px; text-transform:uppercase; letter-spacing:2px; }
 
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; color: #888; font-size: 12px; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 1px; }
+  .form-group input, .form-group select { width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid #333; color: #fff; font-family: 'Courier New', monospace; }
+
   /* ---------- Cards ---------- */
   .card {
     position:relative; background:rgba(255,255,255,0.03); border:2px solid #333; padding:18px; margin-bottom:12px; transition: all 160ms ease; cursor:pointer;
@@ -109,10 +122,6 @@
   .badge-refund.true { color:#60efff; border:1px solid rgba(96,239,255,0.12); background: rgba(96,239,255,0.02); }
   .badge-refund.false { color:#ff8080; border:1px solid rgba(255,128,128,0.08); background: rgba(255,128,128,0.02); }
 
-  /* keep select-btn style available for compatibility */
-  .select-btn { width:100%; padding:10px; background:transparent; border:2px solid #00ff87; color:#00ff87; font-weight:900; cursor:pointer; font-size:11px; margin-top:12px; }
-  .select-btn:hover { background:#00ff87; color:#0a0a0a; }
-
   /* ---------- Chat Modal (bottom) ---------- */
   .chat-backdrop {
     position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.35); opacity:0; pointer-events:none; z-index:1100; transition: opacity 240ms ease;
@@ -126,7 +135,6 @@
   }
   .chat-modal.open { transform: translateY(0%); }
 
-  /* glass pane */
   .chat-pane {
     width:100%; max-width:1080px; margin:0 16px; border-radius:12px 12px 0 0; overflow:hidden;
     border: 1px solid rgba(0,255,135,0.18);
@@ -136,7 +144,6 @@
     -webkit-backdrop-filter: blur(18px) saturate(120%);
   }
 
-  /* heights: desktop 40vh, mobile 80vh */
   .chat-pane { height: 40vh; }
   @media (max-width: 768px) { .chat-pane { height: 80vh; } }
 
@@ -159,7 +166,6 @@
   .chat-input { flex:1; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.25); color:#fff; font-family:'Courier New',monospace; font-weight:700; }
   .chat-send { padding:10px 14px; background:#00ff87; border:none; color:#0a0a0a; font-weight:900; cursor:pointer; border-radius:8px; }
 
-  /* floating button (FAB) */
   .fab {
     position:fixed; right:16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index:1160;
     width:58px; height:58px; border-radius:50%; background:#00ff87; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
@@ -169,17 +175,21 @@
   .fab .emoji { font-size:20px; }
   .fab:active { transform: scale(.98); }
 
-  /* When chat is open, move FAB upward to avoid overlap: desktop -> 40vh, mobile ->80vh */
   body.chat-open .fab { transform: translateY(-40vh); }
   @media (max-width:768px) { body.chat-open .fab { transform: translateY(-80vh); } }
 
-  /* hide fab when hidden via aria state */
   .fab[aria-hidden="true"] { opacity:0; pointer-events:none; }
 
   /* ---------- Itinerary ---------- */
-  .itinerary-builder { padding:16px; background: rgba(0,255,135,0.03); border:2px solid rgba(0,255,135,0.06); }
+  .itinerary-builder { 
+    padding:16px; 
+    background: rgba(0,255,135,0.03); 
+    border:2px solid rgba(0,255,135,0.06);
+    display: flex;
+    flex-direction: column;
+  }
   .itinerary-title { color:#00ff87; font-weight:900; margin-bottom:10px; text-transform:uppercase; font-size:13px; letter-spacing:1px; }
-  .itinerary-items-container { max-height:42vh; overflow:auto; padding-right:6px; }
+  .itinerary-items-container { flex: 1; overflow:auto; padding-right:6px; max-height:42vh; }
   .itinerary-item {
     background: rgba(0,0,0,0.36); border-left:3px solid #00ff87; padding:12px; margin-bottom:10px; opacity:0; transform: translateY(8px);
     animation: dropIn 360ms ease forwards;
@@ -191,95 +201,20 @@
   .itinerary-total { margin-top:10px; display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid #222; }
   .itinerary-total-price { color:#00ff87; font-weight:900; font-size:18px; }
 
-  /* ---------- Change/Cancel subtle buttons ---------- */
+  .itinerary-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
   .tiny-btn {
     display:inline-block; padding:8px 10px; margin-left:8px; border-radius:6px; background:transparent; border:1px solid #666; color:#ccc; font-weight:700; font-size:12px; cursor:pointer;
     transition: all 180ms ease;
   }
   .tiny-btn:hover { box-shadow: 0 6px 14px rgba(0,0,0,0.6), 0 6px 12px rgba(100,100,100,0.04); border-color:#999; color:#fff; transform: translateY(-2px); }
-  .tiny-btn:focus { outline:2px solid rgba(255,255,255,0.06); }
 
-  /* ---------- Accessibility helpers ---------- */
   .sr-only { position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
-
-  /* responsive tweaks */
-  @media (max-width:968px) {
-    .panel { padding:18px; }
-    .panel-title { font-size:16px; }
-      
-    /* ------------- itinerary panel ----------------*/  
-      .itinerary-actions {
-  display: flex;
-  flex-direction: column;
-  margin-top: 16px;
-}
-.itinerary-actions .settings-btn {
-  width: 100%;
-}
-
-/* Override fixed positioning for itinerary buttons specifically */
-.itinerary-buttons .settings-btn {
-  position: static !important;
-  right: auto !important;
-  top: auto !important;
-}
-.itinerary-builder {
-  display: flex;
-  flex-direction: column;
-}
-
-.itinerary-total {
-  margin-top: 12px;
-}
-
-.itinerary-buttons {
-  display: flex;
-  flex-direction: column;
-  margin-top: 16px;
-}
-
-.itinerary-buttons button {
-  width: 100%;
-  position: static;       /* ensures they stay in flow */
-  align-self: stretch;
-}
-
-      /* ---- FIX itinerary stacking on all screen widths ---- */
-.panel[aria-label="Assistant and itinerary"] {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-#itinerary {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.itinerary-items-container {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.itinerary-total {
-  margin-top: 12px;
-}
-
-.itinerary-buttons {
-  display: flex;
-  flex-direction: column;
-  margin-top: 16px;
-}
-
-.itinerary-buttons button {
-  width: 100%;
-  position: static;
-  align-self: stretch;
-}
-
-      
-  }
 </style>
 </head>
 <body>
@@ -439,41 +374,41 @@
         </div>
       </div>
 
-      <!-- Right: Itinerary & AI Assistant toggle -->
+      <!-- Right: Itinerary & AI Assistant -->
       <div class="panel" aria-label="Assistant and itinerary">
         <div class="panel-title">AI ASSISTANT</div>
 
-   <div class="itinerary-builder" id="itinerary">
-  <div class="itinerary-title">📋 YOUR TRIP</div>
+        <div class="itinerary-builder" id="itinerary">
+          <div class="itinerary-title">📋 YOUR TRIP</div>
 
-  <div class="itinerary-items-container">
-    <div id="itineraryItems">
-      <div class="empty-state">Select items to build your itinerary</div>
+          <div class="itinerary-items-container">
+            <div id="itineraryItems">
+              <div class="empty-state">Select items to build your itinerary</div>
+            </div>
+          </div>
+
+          <div class="itinerary-total" id="totalSection" style="display:none;">
+            <div class="itinerary-total-label">TOTAL COST</div>
+            <div class="itinerary-total-price" id="totalPrice">€0</div>
+          </div>
+
+          <div class="itinerary-buttons">
+            <button id="completeBtn"
+              class="settings-btn itinerary-btn"
+              style="background:#00ff87;color:#0a0a0a;"
+              onclick="completeBooking()" disabled>
+              COMPLETE BOOKING →
+            </button>
+            <button class="settings-btn itinerary-btn"
+              style="background:transparent;border:2px solid #333;color:#888;"
+              onclick="resetTrip()">
+              RESET TRIP
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="itinerary-total" id="totalSection" style="display:none;">
-    <div class="itinerary-total-label">TOTAL COST</div>
-    <div class="itinerary-total-price" id="totalPrice">€0</div>
-  </div>
-
-  <div class="itinerary-buttons">
-    <button id="completeBtn"
-      class="settings-btn"
-      style="background:#00ff87;color:#0a0a0a;margin-top:12px;"
-      onclick="completeBooking()" disabled>
-      COMPLETE BOOKING →
-    </button>
-    <button class="settings-btn"
-      style="margin-top:8px;background:transparent;border:2px solid #333;color:#888;"
-      onclick="resetTrip()">
-      RESET TRIP
-    </button>
-  </div>
-</div>
-
-
-
 
   <!-- Chat backdrop & modal -->
   <div class="chat-backdrop" id="chatBackdrop" onclick="closeChat()" aria-hidden="true"></div>
@@ -486,9 +421,7 @@
       </div>
 
       <div class="chat-body">
-        <div class="messages" id="messages" aria-live="polite">
-          <!-- welcome msg injected on load -->
-        </div>
+        <div class="messages" id="messages" aria-live="polite"></div>
 
         <div class="chat-input-area">
           <input id="chatInput" class="chat-input" placeholder="Ask me anything..." aria-label="Chat input" />
@@ -504,14 +437,12 @@
   </button>
 
 <script>
-  /* ---------- State ---------- */
   let config = { demoMode: true };
   const saved = localStorage.getItem('travelAiConfig');
   if (saved) config = JSON.parse(saved);
 
   let itinerary = { flight: null, hotel: null, restaurant: null };
 
-  /* ---------- Modal helpers (config/help) ---------- */
   function showConfig() { document.getElementById('configModal').classList.add('show'); document.getElementById('configModal').setAttribute('aria-hidden','false'); }
   function closeConfig() { document.getElementById('configModal').classList.remove('show'); document.getElementById('configModal').setAttribute('aria-hidden','true'); }
   function saveConfig() {
@@ -524,499 +455,4 @@
     addMsg('ai','✅ Settings saved!');
   }
   function showHelp() { document.getElementById('helpModal').classList.add('show'); document.getElementById('helpModal').setAttribute('aria-hidden','false'); }
-  function closeHelp() { document.getElementById('helpModal').classList.remove('show'); document.getElementById('helpModal').setAttribute('aria-hidden','true'); }
-  function openConfigFromHelp(){ closeHelp(); showConfig(); }
-
-  /* ---------- Start / Tabs ---------- */
-  function fillIntent(text){ document.getElementById('intentInput').value = text; }
-  function toggleVoice() {
-    if ('webkitSpeechRecognition' in window) {
-      const recognition = new webkitSpeechRecognition();
-      recognition.onresult = (e) => { document.getElementById('intentInput').value = e.results[0][0].transcript; };
-      recognition.start();
-      document.getElementById('voiceBtn').classList.add('listening');
-      document.getElementById('voiceText').textContent = 'LISTENING...';
-      recognition.onend = () => { document.getElementById('voiceBtn').classList.remove('listening'); document.getElementById('voiceText').textContent='SPEAK'; };
-    }
-  }
-
-  function startJourney() {
-    document.getElementById('startPage').classList.add('hidden');
-    document.getElementById('mainApp').classList.add('active');
-    document.getElementById('mainApp').setAttribute('aria-hidden','false');
-    // auto-open chat (as requested)
-    openChat();
-  }
-
-  function switchTab(index) {
-    document.querySelectorAll('.tab').forEach((t,i)=> {
-      t.classList.toggle('active', i===index);
-      t.setAttribute('aria-selected', i===index ? 'true':'false');
-    });
-    document.querySelectorAll('.tab-content').forEach((c,i)=> c.classList.toggle('active', i===index));
-  }
-
-  /* ---------- Search & render (with options) ---------- */
-  function search(type) {
-    const container = document.getElementById(type + 'Results');
-    container.innerHTML = '<div class="loading">SEARCHING...</div>';
-    setTimeout(() => {
-      if (type === 'flight') {
-        // each flight now has two "options" (standard vs flexible)
-        const flights = [
-          {
-            id: 'flight1',
-            name: 'Lufthansa LH1234',
-            details: '09:00 BER → 11:30 CDG • Duration: 2h 30m • Non-stop',
-            options: [
-              { type: 'standard', label: 'Standard – Non-Refundable', price: 149, refundable: false, changeable: false },
-              { type: 'flex', label: 'Flexible – Refundable/Changeable', price: 189, refundable: true, changeable: true }
-            ]
-          },
-          {
-            id: 'flight2',
-            name: 'Air France AF5678',
-            details: '14:15 BER → 16:45 CDG • Duration: 2h 30m • Non-stop',
-            options: [
-              { type: 'standard', label: 'Standard – Non-Refundable', price: 175, refundable: false, changeable: false },
-              { type: 'flex', label: 'Flexible – Refundable/Changeable', price: 229, refundable: true, changeable: true }
-            ]
-          },
-          {
-            id: 'flight3',
-            name: 'EasyJet U29012',
-            details: '18:30 BER → 21:00 CDG • Duration: 2h 30m • Non-stop',
-            options: [
-              { type: 'standard', label: 'Standard – Non-Refundable', price: 89, refundable: false, changeable: false },
-              { type: 'flex', label: 'Flexible – Refundable/Changeable', price: 129, refundable: true, changeable: true }
-            ]
-          }
-        ];
-        container.innerHTML = flights.map(f => renderCardOptions('flight', f)).join('');
-      } else if (type === 'hotel') {
-        const hotels = [
-          {
-            id:'hotel1',
-            name:'Grand Hotel Central',
-            details:'⭐⭐⭐⭐⭐ 4.8 • City Center • Free WiFi • Pool • Spa',
-            options:[
-              { type: 'standard', label: 'Standard – Non-Refundable', price: 250, refundable:false, changeable:false },
-              { type: 'flex', label: 'Flexible – Free Cancellation', price: 295, refundable:true, changeable:true }
-            ]
-          },
-          {
-            id:'hotel2',
-            name:'Modern City Suites',
-            details:'⭐⭐⭐⭐ 4.6 • Business District • Free WiFi • Gym • Breakfast',
-            options:[
-              { type:'standard', label:'Standard – Non-Refundable', price:180, refundable:false, changeable:false },
-              { type:'flex', label:'Flexible – Free Cancellation', price:220, refundable:true, changeable:true }
-            ]
-          },
-          {
-            id:'hotel3',
-            name:'Budget Express Inn',
-            details:'⭐⭐⭐ 4.2 • Near Airport • Free WiFi • Parking',
-            options:[
-              { type:'standard', label:'Standard – Non-Refundable', price:95, refundable:false, changeable:false },
-              { type:'flex', label:'Flexible – Free Cancellation', price:115, refundable:true, changeable:true }
-            ]
-          }
-        ];
-        container.innerHTML = hotels.map(h => renderCardOptions('hotel', h)).join('');
-      } else if (type === 'restaurant') {
-        const restaurants = [
-          { id: 'restaurant1', name: 'Le Petit Bistro', details: 'French • ⭐⭐⭐⭐⭐ 4.8 • Authentic bistro', price: 45 },
-          { id: 'restaurant2', name: 'Sushi Zen Master', details: 'Japanese • ⭐⭐⭐⭐⭐ 4.9 • Traditional omakase', price: 85 },
-          { id: 'restaurant3', name: 'La Trattoria', details: 'Italian • ⭐⭐⭐⭐ 4.6 • Handmade pasta', price: 35 }
-        ];
-        container.innerHTML = restaurants.map(r => renderSingle('restaurant', r)).join('');
-      }
-      updateItinerary(); // ensure UI reflects currently selected items
-    }, 700);
-  }
-
-  // small utility to escape attribute embeddings
-  function escapeAttr(s){
-    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  // render multiple option cards for a product (flight/hotel)
-  function renderCardOptions(type, item) {
-    return item.options.map(opt => {
-      const cardId = `${item.id}-${opt.type}`;
-      const safeName = escapeAttr(item.name + ' — ' + opt.label);
-      const safeDetails = escapeAttr(item.details);
-      return `
-        <div class="card" id="${cardId}" data-type="${type}" data-price="${opt.price}" data-name="${escapeAttr(item.name)}" data-details="${safeDetails}"
-             data-refundable="${opt.refundable}" data-changeable="${opt.changeable}" data-optiontype="${opt.type}"
-             onclick="selectItem('${type}','${cardId}', ${opt.price})" role="button" tabindex="0" aria-pressed="false">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <div style="display:flex;flex-direction:column;">
-              <strong style="color:#00ff87;font-size:14px;">${item.name}</strong>
-              <span style="font-size:11px;color:#ccc;margin-top:6px;">${opt.label}</span>
-            </div>
-            <div style="text-align:right;">
-              <strong style="color:#fff;font-size:18px;">€${opt.price}</strong>
-              <div class="badge-refund ${opt.refundable ? 'true':'false'}" style="margin-top:8px;">${opt.refundable ? 'Refundable' : 'Non-Refundable'}</div>
-            </div>
-          </div>
-          <div style="color:#888;font-size:12px;line-height:1.4;">${item.details}</div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  // render single option cards (restaurants)
-  function renderSingle(type, item) {
-    const cardId = item.id;
-    const safeName = escapeAttr(item.name);
-    const safeDetails = escapeAttr(item.details);
-    return `
-      <div class="card" id="${cardId}" data-type="${type}" data-price="${item.price}" data-name="${safeName}" data-details="${safeDetails}"
-           data-refundable="false" data-changeable="true" onclick="selectItem('${type}','${cardId}', ${item.price})" role="button" tabindex="0" aria-pressed="false">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <strong style="color:#00ff87;font-size:14px;">${item.name}</strong>
-          <strong style="color:#fff;font-size:18px;">€${item.price}</strong>
-        </div>
-        <div style="color:#888;font-size:12px;line-height:1.4;">${item.details}</div>
-      </div>
-    `;
-  }
-
-  /* ---------- Selection logic ---------- */
-  function selectItem(type, cardId, price) {
-    // Deselect other cards of same type
-    const container = document.getElementById(type + 'Results');
-    if (container) container.querySelectorAll('.card').forEach(c => {
-      c.classList.remove('selected');
-      c.setAttribute('aria-pressed','false');
-    });
-
-    const card = document.getElementById(cardId);
-    if (!card) return;
-    card.classList.add('selected');
-    card.setAttribute('aria-pressed','true');
-
-    const name = card.dataset.name || '';
-    const details = card.dataset.details || '';
-    const refundable = (card.dataset.refundable === 'true');
-    const changeable = (card.dataset.changeable === 'true');
-    const optionType = card.dataset.optiontype || '';
-
-    // Save to itinerary
-    itinerary[type] = { name, details, price, refundable, changeable, optionType, cardId };
-
-    updateItinerary();
-    updateProgress();
-
-    // assistant contextual replies & tab auto-advance
-    if (type === 'flight') {
-      addMsg('ai', `Great choice — ${name} selected (${optionType}). Let's find a hotel next.`);
-      setTimeout(() => switchTab(1), 700);
-    } else if (type === 'hotel') {
-      addMsg('ai', `Perfect — ${name} selected (${optionType}). Would you like dining suggestions?`);
-      setTimeout(() => switchTab(2), 700);
-    } else {
-      addMsg('ai', `${name} added to your trip!`);
-    }
-  }
-
-  /* ---------- Itinerary / Totals / Reset ---------- */
-  function updateItinerary() {
-    const container = document.getElementById('itineraryItems');
-    const totalSection = document.getElementById('totalSection');
-    const totalPriceEl = document.getElementById('totalPrice');
-    const completeBtn = document.getElementById('completeBtn');
-
-    const parts = [];
-    let total = 0;
-
-    if (itinerary.flight) {
-      parts.push(`
-        <div class="itinerary-item" id="it-flight">
-          <div class="itinerary-item-title">✈️ FLIGHT</div>
-          <div class="itinerary-item-details">${itinerary.flight.name}<br>${itinerary.flight.details}</div>
-          <div style="margin-top:6px;font-size:12px;color:${itinerary.flight.refundable ? '#60efff':'#ff8080'};">
-            ${itinerary.flight.refundable ? 'Refundable / Changeable' : 'Non-Refundable'}
-          </div>
-          <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.flight.price}</div>
-        </div>
-      `);
-      total += itinerary.flight.price;
-    }
-
-    if (itinerary.hotel) {
-      parts.push(`
-        <div class="itinerary-item" id="it-hotel">
-          <div class="itinerary-item-title">🏨 HOTEL</div>
-          <div class="itinerary-item-details">${itinerary.hotel.name}<br>${itinerary.hotel.details}</div>
-          <div style="margin-top:6px;font-size:12px;color:${itinerary.hotel.refundable ? '#60efff':'#ff8080'};">
-            ${itinerary.hotel.refundable ? 'Refundable / Changeable' : 'Non-Refundable'}
-          </div>
-          <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.hotel.price}/night</div>
-        </div>
-      `);
-      total += (itinerary.hotel.price * 2); // assume 2 nights
-    }
-
-    if (itinerary.restaurant) {
-      parts.push(`
-        <div class="itinerary-item" id="it-restaurant">
-          <div class="itinerary-item-title">🍽 DINING</div>
-          <div class="itinerary-item-details">${itinerary.restaurant.name}<br>${itinerary.restaurant.details}</div>
-          <div style="margin-top:6px;font-size:12px;color:#60efff;">
-            ${itinerary.restaurant.changeable ? 'Changeable' : ''}
-          </div>
-          <div style="color:#00ff87;font-weight:900;margin-top:8px;">~€${itinerary.restaurant.price}/person</div>
-        </div>
-      `);
-      total += itinerary.restaurant.price;
-    }
-
-    if (parts.length > 0) {
-      container.innerHTML = parts.join('');
-      totalSection.style.display = 'flex';
-      totalPriceEl.textContent = '€' + total;
-      completeBtn.disabled = false;
-    } else {
-      container.innerHTML = '<div class="empty-state">Select items to build your itinerary</div>';
-      totalSection.style.display = 'none';
-      completeBtn.disabled = true;
-    }
-  }
-
-  function resetTrip() {
-    if (!confirm('Clear your entire itinerary? This cannot be undone.')) return;
-    itinerary = { flight: null, hotel: null, restaurant: null };
-    document.querySelectorAll('.card').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-pressed','false'); });
-    document.getElementById('itineraryItems').innerHTML = '<div class="empty-state">Select items to build your itinerary</div>';
-    document.getElementById('totalSection').style.display = 'none';
-    document.getElementById('totalPrice').textContent = '€0';
-    document.getElementById('completeBtn').disabled = true;
-    document.querySelectorAll('.progress-step').forEach((el,i) => el.classList.toggle('active', i === 0));
-    addMsg('ai', 'Trip reset. Start your search again!');
-  }
-
-  function updateProgress() {
-    let step = 0;
-    if (itinerary.flight) step = 1;
-    if (itinerary.hotel) step = 2;
-    if (itinerary.restaurant) step = 3;
-    document.querySelectorAll('.progress-step').forEach((el,i) => {
-      const wasActive = el.classList.contains('active');
-      el.classList.toggle('active', i <= step);
-      if (!wasActive && el.classList.contains('active')) {
-        el.animate([{ boxShadow:'0 0 0 rgba(0,255,135,0)' }, { boxShadow:'0 10px 30px rgba(0,255,135,0.08)' }, { boxShadow:'0 0 0 rgba(0,255,135,0)' }], { duration:700, easing:'ease' });
-      }
-    });
-  }
-
-  /* ---------- Booking complete & Change/Cancel buttons ---------- */
-  function completeBooking() {
-    const total = document.getElementById('totalPrice').textContent;
-    addMsg('ai', `🎉 Booking confirmed! Total cost: ${total}. You can still change or cancel any part below.`);
-    document.querySelectorAll('.progress-step').forEach(el => el.classList.add('active'));
-    // add change/cancel buttons to itinerary items
-    addChangeCancelButtons();
-  }
-
-  function addChangeCancelButtons() {
-    // For each itinerary item (flight/hotel/restaurant), append Change & Cancel buttons if not present
-    const items = [
-      { id: 'it-flight', type: 'flight' },
-      { id: 'it-hotel', type: 'hotel' },
-      { id: 'it-restaurant', type: 'restaurant' }
-    ];
-    items.forEach(item => {
-      const el = document.getElementById(item.id);
-      if (!el) return;
-      // avoid adding multiple times
-      if (el.querySelector('.change-btn')) return;
-
-      const changeBtn = document.createElement('button');
-      changeBtn.className = 'tiny-btn change-btn';
-      changeBtn.textContent = 'Change';
-      changeBtn.onclick = () => handleChange(item.type);
-
-      const cancelBtn = document.createElement('button');
-      cancelBtn.className = 'tiny-btn cancel-btn';
-      cancelBtn.textContent = 'Cancel';
-      cancelBtn.onclick = () => handleCancel(item.type);
-
-      const wrapper = document.createElement('div');
-      wrapper.style.marginTop = '10px';
-      wrapper.appendChild(changeBtn);
-      wrapper.appendChild(cancelBtn);
-      el.appendChild(wrapper);
-    });
-  }
-
-  function handleChange(type) {
-    // Remove current selection to allow re-selection
-    if (type === 'flight') {
-      itinerary.flight = null;
-      document.querySelectorAll('#flightResults .card').forEach(c => c.classList.remove('selected'));
-      switchTab(0);
-      addMsg('ai', 'Okay — change your flight. Select a different option from the Flights tab.');
-    } else if (type === 'hotel') {
-      itinerary.hotel = null;
-      document.querySelectorAll('#hotelResults .card').forEach(c => c.classList.remove('selected'));
-      switchTab(1);
-      addMsg('ai', 'Okay — change your hotel. Select a different option from the Hotels tab.');
-    } else if (type === 'restaurant') {
-      itinerary.restaurant = null;
-      document.querySelectorAll('#restaurantResults .card').forEach(c => c.classList.remove('selected'));
-      switchTab(2);
-      addMsg('ai', 'Okay — change your dining choice. Select a different option from the Food tab.');
-    }
-    // Update UI/itinerary after removing selection
-    updateItinerary();
-    updateProgress();
-  }
-
-  function handleCancel(type) {
-    const mapping = { flight:'a flight', hotel:'a hotel', restaurant:'a restaurant' };
-    if (!confirm(`Cancel ${mapping[type]}?`)) return;
-    if (type === 'flight') {
-      // deselect card if present
-      if (itinerary.flight && itinerary.flight.cardId) {
-        const c = document.getElementById(itinerary.flight.cardId);
-        if (c) c.classList.remove('selected');
-      }
-      itinerary.flight = null;
-    } else if (type === 'hotel') {
-      if (itinerary.hotel && itinerary.hotel.cardId) {
-        const c = document.getElementById(itinerary.hotel.cardId);
-        if (c) c.classList.remove('selected');
-      }
-      itinerary.hotel = null;
-    } else if (type === 'restaurant') {
-      if (itinerary.restaurant && itinerary.restaurant.cardId) {
-        const c = document.getElementById(itinerary.restaurant.cardId);
-        if (c) c.classList.remove('selected');
-      }
-      itinerary.restaurant = null;
-    }
-    updateItinerary();
-    updateProgress();
-    addMsg('ai', `${mapping[type]} cancelled.`);
-  }
-
-  /* ---------- Chat open/close / FAB ---------- */
-  const chatModal = document.getElementById('chatModal');
-  const chatBackdrop = document.getElementById('chatBackdrop');
-  const fab = document.getElementById('fab');
-  const chatCloseBtn = document.getElementById('chatCloseBtn');
-
-  function openChat() {
-    document.body.classList.add('chat-open');
-    chatModal.classList.add('open');
-    chatModal.setAttribute('aria-hidden','false');
-    chatBackdrop.setAttribute('aria-hidden','false');
-    chatBackdrop.style.pointerEvents = 'auto';
-    fab.setAttribute('aria-hidden','true');
-    setTimeout(()=> { const input = document.getElementById('chatInput'); input.focus(); }, 300);
-  }
-
-  function closeChat() {
-    document.body.classList.remove('chat-open');
-    chatModal.classList.remove('open');
-    chatModal.setAttribute('aria-hidden','true');
-    chatBackdrop.setAttribute('aria-hidden','true');
-    chatBackdrop.style.pointerEvents = 'none';
-    fab.setAttribute('aria-hidden','false');
-  }
-
-  function toggleChat() {
-    if (chatModal.classList.contains('open')) closeChat(); else openChat();
-  }
-
-  // close chat with Esc
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && chatModal.classList.contains('open')) { closeChat(); }
-  });
-
-  // ensure clicking backdrop also closes
-  chatBackdrop.addEventListener('click', closeChat);
-
-  // prevent tab trap: allow keyboard access to close button etc.
-  chatCloseBtn.addEventListener('click', closeChat);
-
-  /* ---------- Chat messaging ---------- */
-  function sendMsg() {
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (!text) return;
-    addMsg('user', text);
-    input.value = '';
-    // simulate assistant thinking then respond
-    setTimeout(()=> addMsg('ai', 'Nice — let me search a few options for you.'), 700);
-  }
-
-  // Enter to send message (inside chat input)
-  document.getElementById('chatInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      sendMsg();
-    }
-  });
-
-  function addMsg(type, text) {
-    const messages = document.getElementById('messages');
-    const wrapper = document.createElement('div');
-    wrapper.className = 'message ' + (type === 'ai' ? 'ai': 'user');
-    const content = document.createElement('div');
-    content.className = 'content';
-    content.textContent = text;
-    wrapper.appendChild(content);
-    messages.appendChild(wrapper);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  /* ---------- Init & welcome ---------- */
-  window.addEventListener('load', () => {
-    if (!localStorage.getItem('visited')) {
-      setTimeout(()=> addMsg('ai','👋 Welcome! Start by searching for flights, then build your perfect trip step by step.'), 900);
-      localStorage.setItem('visited','true');
-    }
-    // Insert initial greeting for chat & open it
-    setTimeout(()=> {
-      addMsg('ai', "Welcome back! Let's plan your next trip");
-      openChat();
-    }, 600);
-  });
-
-  /* ---------- Keyboard accessibility for cards ---------- */
-  document.addEventListener('keydown', (e) => {
-    const active = document.activeElement;
-    if (active && active.classList && active.classList.contains('card') && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      const type = active.dataset.type;
-      const id = active.id;
-      const price = parseFloat(active.dataset.price || '0');
-      selectItem(type, id, price);
-    }
-  });
-
-  /* ---------- Make functions available globally ---------- */
-  window.search = search;
-  window.selectItem = selectItem;
-  window.switchTab = switchTab;
-  window.resetTrip = resetTrip;
-  window.startJourney = startJourney;
-  window.toggleVoice = toggleVoice;
-  window.showConfig = showConfig;
-  window.closeConfig = closeConfig;
-  window.saveConfig = saveConfig;
-  window.showHelp = showHelp;
-  window.closeHelp = closeHelp;
-  window.openConfigFromHelp = openConfigFromHelp;
-  window.fillIntent = fillIntent;
-  window.completeBooking = completeBooking;
-  window.openChat = openChat;
-  window.closeChat = closeChat;
-  window.toggleChat = toggleChat;
-</script>
-</body>
-</html>
+  function closeHelp() { document.getElementById('helpModal
