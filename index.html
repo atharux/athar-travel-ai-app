@@ -27,6 +27,14 @@
     cursor:pointer; text-transform:uppercase; letter-spacing:2px;
     font-size:11px; z-index:1200;
   }
+    
+    bookings-btn{
+         position: fixed; top: 20px; left: 20px;
+    padding: 12px 20px; background: rgba(255,255,255,0.05);
+    border: 2px solid #333; color: #888; font-weight:900;
+    cursor:pointer; text-transform:uppercase; letter-spacing:2px;
+    font-size:11px; z-index:1200;
+    }
   .help-btn { right: 160px; }
   .settings-btn:hover { border-color:#00ff87; color:#00ff87; }
 
@@ -220,7 +228,7 @@
 /* Override fixed positioning for itinerary buttons specifically */
 .itinerary-buttons .settings-btn {
   position: static !important;
-  right: auto !important;
+  left: 100 !important;
   top: auto !important;
 }
 .itinerary-builder {
@@ -279,12 +287,12 @@
 }
 
       
-  }
+}
 </style>
 </head>
 <body>
   <!-- Top Buttons -->
-  <button class="settings-btn" onclick="showConfig()">⚙ CONFIG</button>
+  <button class="settings-btn settings" onclick="showConfig()">⚙ CONFIG</button>
   <button class="settings-btn help-btn" onclick="showHelp()">❓ HELP</button>
 
   <!-- Config Modal -->
@@ -459,12 +467,13 @@
 
   <div class="itinerary-buttons">
     <button id="completeBtn"
-      class="settings-btn"
+      class="bookings-btn"
       style="background:#00ff87;color:#0a0a0a;margin-top:12px;"
       onclick="completeBooking()" disabled>
       COMPLETE BOOKING →
     </button>
-    <button class="settings-btn"
+    <button id="resetBtn"
+      class="bookings-btn"
       style="margin-top:8px;background:transparent;border:2px solid #333;color:#888;"
       onclick="resetTrip()">
       RESET TRIP
