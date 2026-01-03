@@ -1,1031 +1,291 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-black text-white">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AI Travel Assistant</title>
-<style>
-  /* ---------- Base ---------- */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html,body { height: 100%; }
-  body {
-    font-family: 'Courier New', Courier, monospace;
-    background: #0a0a0a;
-    color: #fff;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
-    min-height: 100vh;
-    overflow-x: hidden;
-    padding-bottom: env(safe-area-inset-bottom); /* safe area */
-  }
-
-  /* ---------- Top Right Buttons ---------- */
-  .settings-btn {
-    position: fixed; top: 20px; right: 20px;
-    padding: 12px 20px; background: rgba(255,255,255,0.05);
-    border: 2px solid #333; color: #888; font-weight:900;
-    cursor:pointer; text-transform:uppercase; letter-spacing:2px;
-    font-size:11px; z-index:1200;
-  }
-    
-    bookings-btn{
-         position: fixed; top: 20px; left: 20px;
-    padding: 12px 20px; background: rgba(255,255,255,0.05);
-    border: 2px solid #333; color: #888; font-weight:900;
-    cursor:pointer; text-transform:uppercase; letter-spacing:2px;
-    font-size:11px; z-index:1200;
-    }
-  .help-btn { right: 160px; }
-  .settings-btn:hover { border-color:#00ff87; color:#00ff87; }
-
-  /* ---------- Modals ---------- */
-  .modal { position:fixed; top:0; left:0; width:100%; height:100%; display:none; align-items:center; justify-content:center; z-index:1200; }
-  .modal.show { display:flex; }
-  .modal-content {
-    background:#1a1a1a; border:2px solid #00ff87; padding:40px; width:90%; max-width:600px; max-height:90vh; overflow:auto; position:relative;
-  }
-  .modal-close { position:absolute; top:12px; right:12px; background:transparent; border:none; color:#666; font-size:28px; cursor:pointer; }
-  .modal-close:hover { color:#00ff87; transform:rotate(90deg); }
-  .modal-title { font-size:20px; color:#00ff87; font-weight:900; text-transform:uppercase; margin-bottom:12px; letter-spacing:2px; }
-  .modal-text { color:#888; font-size:13px; line-height:1.6; margin-bottom:18px; }
-
-  /* ---------- Start Page ---------- */
-  .start-page { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; background:linear-gradient(180deg,#0a0a0a,#1a1a1a); }
-  .start-page.hidden { display:none; }
-  .logo-large { font-size:72px; font-weight:900; letter-spacing:-2px; margin-bottom:20px; text-transform:uppercase;
-    background: linear-gradient(135deg,#00ff87,#60efff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  .tagline { color:#666; margin-bottom:40px; text-transform:uppercase; letter-spacing:4px; font-weight:700; }
-  .intent-wrapper { width:100%; max-width:800px; background: rgba(255,255,255,0.03); border:2px solid #00ff87; backdrop-filter: blur(6px); }
-  .intent-input { width:100%; padding:36px; background:transparent; border:none; color:#fff; font-size:20px; font-weight:700; min-height:120px; font-family:'Courier New',monospace; }
-  .intent-actions { display:flex; justify-content:space-between; padding:18px 28px; background:rgba(0,0,0,0.45); border-top:2px solid #00ff87; }
-  .voice-btn { padding:12px 20px; background:#00ff87; border:none; color:#0a0a0a; font-weight:900; cursor:pointer; }
-  .voice-btn.listening { background:#ff0055; animation:pulse 1.5s infinite; }
-  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.7 } }
-
-  .suggestions { margin-top:24px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:12px; max-width:800px; width:100%; }
-  .suggestion { padding:14px; text-align:center; text-transform:uppercase; color:#888; border:1px solid #333; background:rgba(255,255,255,0.02); cursor:pointer; font-weight:700; }
-  .suggestion:hover { border-color:#00ff87; color:#00ff87; background:rgba(0,255,135,0.05); }
-
-  /* ---------- Main App ---------- */
-  .main-app { display:none; min-height:100vh; }
-  .main-app.active { display:block; }
-  .header { padding:20px 28px; background:#0a0a0a; border-bottom:2px solid #00ff87; display:flex; justify-content:space-between; align-items:center; }
-  .logo { color:#00ff87; font-weight:900; text-transform:uppercase; letter-spacing:-1px; font-size:20px; }
-  .badge { background:#00ff87; padding:6px 12px; color:#0a0a0a; font-weight:900; text-transform:uppercase; letter-spacing:2px; font-size:11px; margin-left:12px; }
-
-  .progress { display:flex; background:#0a0a0a; border-bottom:1px solid #222; }
-  .progress-step { flex:1; text-align:center; padding:12px; color:#444; font-weight:900; font-size:11px; text-transform:uppercase; letter-spacing:2px; border-right:1px solid #222; transition: all 200ms ease; position:relative; }
-  .progress-step:last-child { border-right:none; }
-  .progress-step.active { color:#00ff87; background: rgba(0,255,135,0.05); border-bottom:3px solid #00ff87; animation: progressPulse 700ms ease; }
-  @keyframes progressPulse { 0% { box-shadow: 0 0 0 rgba(0,255,135,0); } 50% { box-shadow: 0 6px 18px rgba(0,255,135,0.08);} 100% { box-shadow: 0 0 0 rgba(0,255,135,0); } }
-
-  .content { display:grid; grid-template-columns: 1fr 360px; gap:0; background:#0a0a0a; }
-  @media (max-width: 1080px) { .content { grid-template-columns: 1fr 320px; } }
-  @media (max-width: 768px) { .content { grid-template-columns: 1fr; } }
-
-  .panel { padding:28px; border-right:1px solid #222; min-height: calc(100vh - 120px); }
-  .panel:last-child { border-right:none; }
-  .panel-title { color:#fff; font-size:18px; font-weight:900; margin-bottom:18px; text-transform:uppercase; border-bottom:2px solid #00ff87; padding-bottom:12px; }
-
-  .tabs { display:flex; border:2px solid #333; margin-bottom:18px; }
-  .tab { flex:1; padding:10px; background:transparent; border:none; border-right:1px solid #333; color:#666; font-weight:900; cursor:pointer; text-transform:uppercase; letter-spacing:2px; font-size:12px; }
-  .tab:last-child { border-right:none; }
-  .tab.active { background:#00ff87; color:#0a0a0a; }
-
-  .tab-content { display:none; }
-  .tab-content.active { display:block; }
-
-  .search-btn { width:100%; padding:14px; background:#00ff87; border:none; color:#0a0a0a; font-weight:900; cursor:pointer; text-transform:uppercase; letter-spacing:3px; margin-top:12px; }
-  .search-btn:hover { background:#60efff; }
-  .results { margin-top:18px; }
-
-  .loading { text-align:center; padding:30px; color:#00ff87; font-size:13px; text-transform:uppercase; letter-spacing:2px; }
-
-  /* ---------- Cards ---------- */
-  .card {
-    position:relative; background:rgba(255,255,255,0.03); border:2px solid #333; padding:18px; margin-bottom:12px; transition: all 160ms ease; cursor:pointer;
-  }
-  .card:hover { border-color:#00ff87; background: rgba(0,255,135,0.05); }
-  .card::after { content:""; display:block; }
-  .card:hover::after {
-    content: "→ CLICK TO SELECT";
-    position:absolute; bottom:10px; right:12px; color:#00ff87; font-size:11px; letter-spacing:2px; font-weight:900; text-transform:uppercase;
-  }
-  .card.selected { border-color:#00ff87; background: rgba(0,255,135,0.12); box-shadow: 0 6px 18px rgba(0,255,135,0.04); }
-
-  .badge-refund { font-size:11px; padding:6px 8px; border-radius:6px; font-weight:900; text-transform:uppercase; letter-spacing:1px; display:inline-block; margin-top:8px; }
-  .badge-refund.true { color:#60efff; border:1px solid rgba(96,239,255,0.12); background: rgba(96,239,255,0.02); }
-  .badge-refund.false { color:#ff8080; border:1px solid rgba(255,128,128,0.08); background: rgba(255,128,128,0.02); }
-
-  /* keep select-btn style available for compatibility */
-  .select-btn { width:100%; padding:10px; background:transparent; border:2px solid #00ff87; color:#00ff87; font-weight:900; cursor:pointer; font-size:11px; margin-top:12px; }
-  .select-btn:hover { background:#00ff87; color:#0a0a0a; }
-
-  /* ---------- Chat Modal (bottom) ---------- */
-  .chat-backdrop {
-    position:fixed; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.35); opacity:0; pointer-events:none; z-index:1100; transition: opacity 240ms ease;
-    backdrop-filter: blur(2px);
-  }
-  body.chat-open .chat-backdrop { opacity:1; pointer-events:auto; }
-
-  .chat-modal {
-    position:fixed; left:0; right:0; bottom:0; transform: translateY(100%); transition: transform 360ms cubic-bezier(.2,.9,.2,1); z-index:1150;
-    display:flex; justify-content:center; pointer-events:auto;
-  }
-  .chat-modal.open { transform: translateY(0%); }
-
-  /* glass pane */
-  .chat-pane {
-    width:100%; max-width:1080px; margin:0 16px; border-radius:12px 12px 0 0; overflow:hidden;
-    border: 1px solid rgba(0,255,135,0.18);
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.6), 0 8px 24px rgba(0,255,135,0.04);
-    background: rgba(6,6,6,0.55);
-    backdrop-filter: blur(18px) saturate(120%);
-    -webkit-backdrop-filter: blur(18px) saturate(120%);
-  }
-
-  /* heights: desktop 40vh, mobile 80vh */
-  .chat-pane { height: 40vh; }
-  @media (max-width: 768px) { .chat-pane { height: 80vh; } }
-
-  .chat-header {
-    display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,0.03);
-  }
-  .chat-title { color:#00ff87; font-weight:900; text-transform:uppercase; letter-spacing:1px; }
-  .chat-close { background:transparent; border:none; color:#ddd; font-size:20px; cursor:pointer; padding:8px; }
-  .chat-close:hover { color:#fff; transform:rotate(90deg); }
-
-  .chat-body { display:flex; flex-direction:column; height: calc(100% - 120px); padding:12px 16px; overflow:auto; }
-  .messages { flex:1; overflow:auto; padding-right:8px; }
-  .message { margin-bottom:12px; }
-  .message .content { display:inline-block; padding:10px 12px; border-radius:6px; max-width:72%; font-size:13px; line-height:1.45; }
-  .message.ai .content { background: rgba(0,255,135,0.07); border-left:3px solid #00ff87; color:#e6ffe9; }
-  .message.user { display:flex; justify-content:flex-end; }
-  .message.user .content { background: rgba(96,239,255,0.08); border-right:3px solid #60efff; color:#e6fbff; }
-
-  .chat-input-area { display:flex; gap:8px; padding:12px 16px; border-top:1px solid rgba(255,255,255,0.03); }
-  .chat-input { flex:1; padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.25); color:#fff; font-family:'Courier New',monospace; font-weight:700; }
-  .chat-send { padding:10px 14px; background:#00ff87; border:none; color:#0a0a0a; font-weight:900; cursor:pointer; border-radius:8px; }
-
-  /* floating button (FAB) */
-  .fab {
-    position:fixed; right:16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index:1160;
-    width:58px; height:58px; border-radius:50%; background:#00ff87; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    transition: transform 360ms cubic-bezier(.2,.9,.2,1), opacity 200ms ease;
-    border: 2px solid rgba(0,255,135,0.12);
-  }
-  .fab .emoji { font-size:20px; }
-  .fab:active { transform: scale(.98); }
-
-  /* When chat is open, move FAB upward to avoid overlap: desktop -> 40vh, mobile ->80vh */
-  body.chat-open .fab { transform: translateY(-40vh); }
-  @media (max-width:768px) { body.chat-open .fab { transform: translateY(-80vh); } }
-
-  /* hide fab when hidden via aria state */
-  .fab[aria-hidden="true"] { opacity:0; pointer-events:none; }
-
-  /* ---------- Itinerary ---------- */
-  .itinerary-builder { padding:16px; background: rgba(0,255,135,0.03); border:2px solid rgba(0,255,135,0.06); }
-  .itinerary-title { color:#00ff87; font-weight:900; margin-bottom:10px; text-transform:uppercase; font-size:13px; letter-spacing:1px; }
-  .itinerary-items-container { max-height:42vh; overflow:auto; padding-right:6px; }
-  .itinerary-item {
-    background: rgba(0,0,0,0.36); border-left:3px solid #00ff87; padding:12px; margin-bottom:10px; opacity:0; transform: translateY(8px);
-    animation: dropIn 360ms ease forwards;
-  }
-  @keyframes dropIn { to { opacity:1; transform:none; } }
-
-  .itinerary-item-title { color:#00ff87; font-weight:900; margin-bottom:6px; font-size:12px; text-transform:uppercase; }
-  .itinerary-item-details { color:#ccc; font-size:13px; line-height:1.4; }
-  .itinerary-total { margin-top:10px; display:flex; justify-content:space-between; align-items:center; padding-top:10px; border-top:1px solid #222; }
-  .itinerary-total-price { color:#00ff87; font-weight:900; font-size:18px; }
-
-  /* ---------- Change/Cancel subtle buttons ---------- */
-  .tiny-btn {
-    display:inline-block; padding:8px 10px; margin-left:8px; border-radius:6px; background:transparent; border:1px solid #666; color:#ccc; font-weight:700; font-size:12px; cursor:pointer;
-    transition: all 180ms ease;
-  }
-  .tiny-btn:hover { box-shadow: 0 6px 14px rgba(0,0,0,0.6), 0 6px 12px rgba(100,100,100,0.04); border-color:#999; color:#fff; transform: translateY(-2px); }
-  .tiny-btn:focus { outline:2px solid rgba(255,255,255,0.06); }
-
-  /* ---------- Accessibility helpers ---------- */
-  .sr-only { position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; }
-
-  /* responsive tweaks */
-  @media (max-width:968px) {
-    .panel { padding:18px; }
-    .panel-title { font-size:16px; }
-      
-    /* ------------- itinerary panel ----------------*/  
-      .itinerary-actions {
-  display: flex;
-  flex-direction: column;
-  margin-top: 16px;
-}
-.itinerary-actions .settings-btn {
-  width: 100%;
-}
-
-/* Override fixed positioning for itinerary buttons specifically */
-.itinerary-buttons .settings-btn {
-  position: static !important;
-  left: 100 !important;
-  top: auto !important;
-}
-.itinerary-builder {
-  display: flex;
-  flex-direction: column;
-}
-
-.itinerary-total {
-  margin-top: 12px;
-}
-
-.itinerary-buttons {
-  display: flex;
-  flex-direction: column;
-  margin-top: 16px;
-}
-
-.itinerary-buttons button {
-  width: 100%;
-  position: static;       /* ensures they stay in flow */
-  align-self: stretch;
-}
-
-      /* ---- FIX itinerary stacking on all screen widths ---- */
-.panel[aria-label="Assistant and itinerary"] {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-#itinerary {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.itinerary-items-container {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.itinerary-total {
-  margin-top: 12px;
-}
-
-.itinerary-buttons {
-  display: flex;
-  flex-direction: column;
-  margin-top: 16px;
-}
-
-.itinerary-buttons button {
-  width: 100%;
-  position: static;
-  align-self: stretch;
-}
-
-      
-}
-</style>
+  <meta charset="UTF-8" />
+  <title>Travel AI App — From Demo to Orchestration System</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
-<body>
-  <!-- Top Buttons -->
-  <button class="settings-btn settings" onclick="showConfig()">⚙ CONFIG</button>
-  <button class="settings-btn help-btn" onclick="showHelp()">❓ HELP</button>
+    <style>
+        h3 {
+            margin-right: 1rem;
+        }        
 
-  <!-- Config Modal -->
-  <div class="modal" id="configModal" aria-hidden="true">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="configTitle">
-      <button class="modal-close" onclick="closeConfig()" aria-label="Close config">×</button>
-      <div id="configTitle" class="modal-title">⚡ API Setup</div>
-      <div class="modal-text">Optional: Connect real APIs for live data. Demo mode works without setup.</div>
-      <div class="form-group">
-        <label class="form-label">Amadeus API Key</label>
-        <input type="text" id="amadeusKey" placeholder="Optional">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Amadeus Secret</label>
-        <input type="password" id="amadeusSecret" placeholder="Optional">
-      </div>
-      <div class="form-group">
-        <label class="form-label">OpenAI Key (Optional)</label>
-        <input type="password" id="openaiKey" placeholder="Optional">
-      </div>
-      <button class="settings-btn" onclick="saveConfig()">Save</button>
-      <button class="settings-btn" style="right:auto; margin-left:12px; background:transparent; border:2px solid #333; color:#888;" onclick="closeConfig()">Cancel</button>
-    </div>
-  </div>
+li {
+  display: inline;
+}
 
-  <!-- Help Modal -->
-  <div class="modal" id="helpModal" aria-hidden="true">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="helpTitle" style="max-width:800px;">
-      <button class="modal-close" onclick="closeHelp()" aria-label="Close help">×</button>
-      <div id="helpTitle" class="modal-title">📚 Help Guide</div>
-      <div class="modal-text">
-        <strong style="color:#00ff87;">Demo Mode (Default)</strong><br>
-        Works immediately with realistic data. Perfect for testing.<br><br>
-        <strong style="color:#00ff87;">Live Mode (Optional)</strong><br>
-        Connect APIs for real flight/hotel data:<br><br>
-        1. Get Amadeus API (Free): <a href="https://developers.amadeus.com/register" target="_blank" style="color:#60efff;">developers.amadeus.com/register</a><br>
-        2. Create app in "Self-Service Workspace"<br>
-        3. Copy API Key + Secret<br>
-        4. Paste in Config (⚙ button)<br><br>
-        OpenAI is optional for enhanced AI chat.
-      </div>
-      <button class="settings-btn" onclick="openConfigFromHelp()">Setup APIs</button>
-      <button class="settings-btn" style="background:transparent; border:2px solid #333; color:#888; margin-left:8px;" onclick="closeHelp()">Got It</button>
-    </div>
-  </div>
+ul {
+  padding: 0px;
+}
 
-  <!-- Start Page -->
-  <div class="start-page" id="startPage">
-    <div class="logo-large">TRAVELAI</div>
-    <div class="tagline">AI-Powered Journey Planning</div>
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+display: block;
+}
 
-    <div class="intent-wrapper">
-      <textarea class="intent-input" id="intentInput" placeholder="Where do you want to go? Tell me your plans..."></textarea>
-      <div class="intent-actions">
-        <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()"><span>🎤</span> <span id="voiceText">SPEAK</span></button>
-        <button class="settings-btn" onclick="startJourney()" style="background:#00ff87; color:#0a0a0a;">BEGIN →</button>
-      </div>
-    </div>
-
-    <div class="suggestions">
-      <div class="suggestion" onclick="fillIntent('Weekend trip to Paris')">Weekend Getaway</div>
-      <div class="suggestion" onclick="fillIntent('Business trip to London next week')">Business Travel</div>
-      <div class="suggestion" onclick="fillIntent('Beach vacation in Bali')">Beach Vacation</div>
-      <div class="suggestion" onclick="fillIntent('Multi-city: Berlin, Prague, Vienna')">Multi-City</div>
-    </div>
-  </div>
-
-  <!-- Main App -->
-  <div class="main-app" id="mainApp" aria-hidden="true">
-    <div class="header">
-      <div>
-        <span class="logo">TRAVELAI</span>
-        <span class="badge" id="modeBadge">DEMO MODE</span>
-      </div>
-    </div>
-
-    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="3">
-      <div class="progress-step active" id="step0">Now Booking</div>
-      <div class="progress-step" id="step1">Hotel</div>
-      <div class="progress-step" id="step2">Dining</div>
-      <div class="progress-step" id="step3">Review</div>
-      <div class="progress-step" id="step4">Complete</div>
-    </div>
-
-    <div class="content" role="main">
-      <!-- Left: Search -->
-      <div class="panel" aria-label="Search panel">
-        <div class="panel-title">SEARCH</div>
-
-        <div class="tabs" role="tablist">
-          <button class="tab active" onclick="switchTab(0)" role="tab" aria-selected="true">FLIGHTS</button>
-          <button class="tab" onclick="switchTab(1)" role="tab">HOTELS</button>
-          <button class="tab" onclick="switchTab(2)" role="tab">FOOD</button>
-        </div>
-
-        <div class="tab-content active" id="tab0">
-          <div class="search-form">
-            <div class="form-group">
-              <label class="form-label">From</label>
-              <input type="text" id="from" value="BER" placeholder="Airport Code">
-            </div>
-            <div class="form-group">
-              <label class="form-label">To</label>
-              <input type="text" id="to" value="CDG" placeholder="Airport Code">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Date</label>
-              <input type="date" id="date" value="2025-11-01">
-            </div>
-            <button class="search-btn" onclick="search('flight')">SEARCH FLIGHTS</button>
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+  border-color: rgba(102, 126, 234, 0.5);
+}
+    
+    
+    </style>
+<body class="h-full font-mono bg-black text-white">
+  <main class="min-h-screen">
+    <!-- HERO -->
+    <section class="border-b border-white px-6 py-10 md:py-16">
+      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
+        <div>
+          <h1 class="text-3xl md:text-5xl font-bold tracking-tight uppercase">
+            Travel AI App<br />
+            <span class="bg-white text-black px-2 inline-block mt-2">
+              Process & System Design
+            </span>
+          </h1>
+          <p class="mt-6 text-sm md:text-base max-w-md leading-relaxed">
+            From demo to orchestration system.<br />
+            A travel orchestration layer, not a booking engine.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-4 items-center">
+            <a href="https://athar-travel-ai-app.pages.dev/?"
+               class="border border-white bg-white text-black px-4 py-2 text-xs uppercase tracking-wide hover:bg-black hover:text-white transition">
+              Open Demo
+            </a>
+            <span class="text-xs uppercase tracking-wide">
+              Demo mode · no login · brutalist UI
+            </span>
           </div>
-          <div id="flightResults" class="results" aria-live="polite"></div>
         </div>
-
-        <div class="tab-content" id="tab1">
-          <div class="search-form">
-            <div class="form-group">
-              <label class="form-label">City</label>
-              <input type="text" id="city" value="Paris">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Check-in</label>
-              <input type="date" id="checkin" value="2025-11-01">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Check-out</label>
-              <input type="date" id="checkout" value="2025-11-03">
-            </div>
-            <button class="search-btn" onclick="search('hotel')">SEARCH HOTELS</button>
+        <div class="border border-white p-4 md:p-6 text-xs space-y-3">
+          <div class="flex justify-between border-b border-white pb-2">
+            <span>Problem Context</span>
+            <span class="opacity-60">01</span>
           </div>
-          <div id="hotelResults" class="results" aria-live="polite"></div>
-        </div>
-
-        <div class="tab-content" id="tab2">
-          <div class="search-form">
-            <div class="form-group">
-              <label class="form-label">Location</label>
-              <input type="text" id="location" value="Paris">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Cuisine</label>
-              <select id="cuisine">
-                <option>All</option>
-                <option>French</option>
-                <option>Italian</option>
-                <option>Japanese</option>
-              </select>
-            </div>
-            <button class="search-btn" onclick="search('restaurant')">FIND RESTAURANTS</button>
-          </div>
-          <div id="restaurantResults" class="results" aria-live="polite"></div>
+          <p>Intent lives in conversation. Users say “somewhere warm in March” or “kid‑friendly beach with direct flights.”</p>
+          <p>Execution lives in rigid forms. Every new form resets the conversation; intent gets reduced to dropdowns.</p>
+          <p>Most tools optimize for transactions, not understanding.</p>
         </div>
       </div>
+    </section>
 
-      <!-- Right: Itinerary & AI Assistant toggle -->
-      <div class="panel" aria-label="Assistant and itinerary">
-        <div class="panel-title">AI ASSISTANT</div>
-
-   <div class="itinerary-builder" id="itinerary">
-  <div class="itinerary-title">📋 YOUR TRIP</div>
-
-  <div class="itinerary-items-container">
-    <div id="itineraryItems">
-      <div class="empty-state">Select items to build your itinerary</div>
-    </div>
-  </div>
-
-  <div class="itinerary-total" id="totalSection" style="display:none;">
-    <div class="itinerary-total-label">TOTAL COST</div>
-    <div class="itinerary-total-price" id="totalPrice">€0</div>
-  </div>
-
-  <div class="itinerary-buttons">
-    <button id="completeBtn"
-      class="bookings-btn"
-      style="background:#00ff87;color:#0a0a0a;margin-top:12px;"
-      onclick="completeBooking()" disabled>
-      COMPLETE BOOKING →
-    </button>
-    <button id="resetBtn"
-      class="bookings-btn"
-      style="margin-top:8px;background:transparent;border:2px solid #333;color:#888;"
-      onclick="resetTrip()">
-      RESET TRIP
-    </button>
-  </div>
-</div>
-
-
-
-
-  <!-- Chat backdrop & modal -->
-  <div class="chat-backdrop" id="chatBackdrop" onclick="closeChat()" aria-hidden="true"></div>
-
-  <div class="chat-modal" id="chatModal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="AI Assistant">
-    <div class="chat-pane" role="document">
-      <div class="chat-header">
-        <div class="chat-title">💬 AI Assistant</div>
-        <button class="chat-close" id="chatCloseBtn" aria-label="Close chat" onclick="closeChat()">×</button>
-      </div>
-
-      <div class="chat-body">
-        <div class="messages" id="messages" aria-live="polite">
-          <!-- welcome msg injected on load -->
+    <!-- OPERATIONS SYSTEM IDEA -->
+    <section class="border-b border-white px-6 py-10">
+      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
+        <div class="space-y-4">
+          <h2 class="text-xl md:text-2xl font-bold uppercase">
+            What if travel planning worked like an operations system?
+          </h2>
+          <ul class="text-xs space-y-2">
+            <li><span class="font-bold">01.</span> AI captures intent and constraints from natural language without forcing premature decisions.</li>
+            <li><span class="font-bold">02.</span> Users confirm assumptions explicitly before anything runs.</li>
+            <li><span class="font-bold">03.</span> The system orchestrates decisions transparently, with visible reasoning and alternatives.</li>
+          </ul>
+          <p class="text-xs mt-4">
+            Not a chatbot. Not an OTA clone. A planning and orchestration layer.
+          </p>
         </div>
-
-        <div class="chat-input-area">
-          <input id="chatInput" class="chat-input" placeholder="Ask me anything..." aria-label="Chat input" />
-          <button class="chat-send" id="chatSend" onclick="sendMsg()" aria-label="Send message">SEND</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Floating button to reopen chat -->
-  <button class="fab" id="fab" aria-label="Open AI Assistant" title="AI Assistant (chat)" onclick="toggleChat()" aria-hidden="false">
-    <span class="emoji">💬</span>
-  </button>
-
-<script>
-  /* ---------- State ---------- */
-  let config = { demoMode: true };
-  const saved = localStorage.getItem('travelAiConfig');
-  if (saved) config = JSON.parse(saved);
-
-  let itinerary = { flight: null, hotel: null, restaurant: null };
-
-  /* ---------- Modal helpers (config/help) ---------- */
-  function showConfig() { document.getElementById('configModal').classList.add('show'); document.getElementById('configModal').setAttribute('aria-hidden','false'); }
-  function closeConfig() { document.getElementById('configModal').classList.remove('show'); document.getElementById('configModal').setAttribute('aria-hidden','true'); }
-  function saveConfig() {
-    config.amadeusKey = document.getElementById('amadeusKey').value.trim();
-    config.amadeusSecret = document.getElementById('amadeusSecret').value.trim();
-    config.openaiKey = document.getElementById('openaiKey').value.trim();
-    if (config.amadeusKey) { config.demoMode = false; document.getElementById('modeBadge').textContent = 'LIVE MODE'; }
-    localStorage.setItem('travelAiConfig', JSON.stringify(config));
-    closeConfig();
-    addMsg('ai','✅ Settings saved!');
-  }
-  function showHelp() { document.getElementById('helpModal').classList.add('show'); document.getElementById('helpModal').setAttribute('aria-hidden','false'); }
-  function closeHelp() { document.getElementById('helpModal').classList.remove('show'); document.getElementById('helpModal').setAttribute('aria-hidden','true'); }
-  function openConfigFromHelp(){ closeHelp(); showConfig(); }
-
-  /* ---------- Start / Tabs ---------- */
-  function fillIntent(text){ document.getElementById('intentInput').value = text; }
-  function toggleVoice() {
-    if ('webkitSpeechRecognition' in window) {
-      const recognition = new webkitSpeechRecognition();
-      recognition.onresult = (e) => { document.getElementById('intentInput').value = e.results[0][0].transcript; };
-      recognition.start();
-      document.getElementById('voiceBtn').classList.add('listening');
-      document.getElementById('voiceText').textContent = 'LISTENING...';
-      recognition.onend = () => { document.getElementById('voiceBtn').classList.remove('listening'); document.getElementById('voiceText').textContent='SPEAK'; };
-    }
-  }
-
-  function startJourney() {
-    document.getElementById('startPage').classList.add('hidden');
-    document.getElementById('mainApp').classList.add('active');
-    document.getElementById('mainApp').setAttribute('aria-hidden','false');
-    // auto-open chat (as requested)
-    openChat();
-  }
-
-  function switchTab(index) {
-    document.querySelectorAll('.tab').forEach((t,i)=> {
-      t.classList.toggle('active', i===index);
-      t.setAttribute('aria-selected', i===index ? 'true':'false');
-    });
-    document.querySelectorAll('.tab-content').forEach((c,i)=> c.classList.toggle('active', i===index));
-  }
-
-  /* ---------- Search & render (with options) ---------- */
-  function search(type) {
-    const container = document.getElementById(type + 'Results');
-    container.innerHTML = '<div class="loading">SEARCHING...</div>';
-    setTimeout(() => {
-      if (type === 'flight') {
-        // each flight now has two "options" (standard vs flexible)
-        const flights = [
-          {
-            id: 'flight1',
-            name: 'Lufthansa LH1234',
-            details: '09:00 BER → 11:30 CDG • Duration: 2h 30m • Non-stop',
-            options: [
-              { type: 'standard', label: 'Standard – Non-Refundable', price: 149, refundable: false, changeable: false },
-              { type: 'flex', label: 'Flexible – Refundable/Changeable', price: 189, refundable: true, changeable: true }
-            ]
-          },
-          {
-            id: 'flight2',
-            name: 'Air France AF5678',
-            details: '14:15 BER → 16:45 CDG • Duration: 2h 30m • Non-stop',
-            options: [
-              { type: 'standard', label: 'Standard – Non-Refundable', price: 175, refundable: false, changeable: false },
-              { type: 'flex', label: 'Flexible – Refundable/Changeable', price: 229, refundable: true, changeable: true }
-            ]
-          },
-          {
-            id: 'flight3',
-            name: 'EasyJet U29012',
-            details: '18:30 BER → 21:00 CDG • Duration: 2h 30m • Non-stop',
-            options: [
-              { type: 'standard', label: 'Standard – Non-Refundable', price: 89, refundable: false, changeable: false },
-              { type: 'flex', label: 'Flexible – Refundable/Changeable', price: 129, refundable: true, changeable: true }
-            ]
-          }
-        ];
-        container.innerHTML = flights.map(f => renderCardOptions('flight', f)).join('');
-      } else if (type === 'hotel') {
-        const hotels = [
-          {
-            id:'hotel1',
-            name:'Grand Hotel Central',
-            details:'⭐⭐⭐⭐⭐ 4.8 • City Center • Free WiFi • Pool • Spa',
-            options:[
-              { type: 'standard', label: 'Standard – Non-Refundable', price: 250, refundable:false, changeable:false },
-              { type: 'flex', label: 'Flexible – Free Cancellation', price: 295, refundable:true, changeable:true }
-            ]
-          },
-          {
-            id:'hotel2',
-            name:'Modern City Suites',
-            details:'⭐⭐⭐⭐ 4.6 • Business District • Free WiFi • Gym • Breakfast',
-            options:[
-              { type:'standard', label:'Standard – Non-Refundable', price:180, refundable:false, changeable:false },
-              { type:'flex', label:'Flexible – Free Cancellation', price:220, refundable:true, changeable:true }
-            ]
-          },
-          {
-            id:'hotel3',
-            name:'Budget Express Inn',
-            details:'⭐⭐⭐ 4.2 • Near Airport • Free WiFi • Parking',
-            options:[
-              { type:'standard', label:'Standard – Non-Refundable', price:95, refundable:false, changeable:false },
-              { type:'flex', label:'Flexible – Free Cancellation', price:115, refundable:true, changeable:true }
-            ]
-          }
-        ];
-        container.innerHTML = hotels.map(h => renderCardOptions('hotel', h)).join('');
-      } else if (type === 'restaurant') {
-        const restaurants = [
-          { id: 'restaurant1', name: 'Le Petit Bistro', details: 'French • ⭐⭐⭐⭐⭐ 4.8 • Authentic bistro', price: 45 },
-          { id: 'restaurant2', name: 'Sushi Zen Master', details: 'Japanese • ⭐⭐⭐⭐⭐ 4.9 • Traditional omakase', price: 85 },
-          { id: 'restaurant3', name: 'La Trattoria', details: 'Italian • ⭐⭐⭐⭐ 4.6 • Handmade pasta', price: 35 }
-        ];
-        container.innerHTML = restaurants.map(r => renderSingle('restaurant', r)).join('');
-      }
-      updateItinerary(); // ensure UI reflects currently selected items
-    }, 700);
-  }
-
-  // small utility to escape attribute embeddings
-  function escapeAttr(s){
-    return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-
-  // render multiple option cards for a product (flight/hotel)
-  function renderCardOptions(type, item) {
-    return item.options.map(opt => {
-      const cardId = `${item.id}-${opt.type}`;
-      const safeName = escapeAttr(item.name + ' — ' + opt.label);
-      const safeDetails = escapeAttr(item.details);
-      return `
-        <div class="card" id="${cardId}" data-type="${type}" data-price="${opt.price}" data-name="${escapeAttr(item.name)}" data-details="${safeDetails}"
-             data-refundable="${opt.refundable}" data-changeable="${opt.changeable}" data-optiontype="${opt.type}"
-             onclick="selectItem('${type}','${cardId}', ${opt.price})" role="button" tabindex="0" aria-pressed="false">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <div style="display:flex;flex-direction:column;">
-              <strong style="color:#00ff87;font-size:14px;">${item.name}</strong>
-              <span style="font-size:11px;color:#ccc;margin-top:6px;">${opt.label}</span>
+        <div class="border border-white p-4 text-xs">
+          <div class="grid grid-cols-4 gap-2">
+            <div class="col-span-1 border border-white p-2">
+              <div class="uppercase text-[10px] mb-1">Intent</div>
+              <p class="text-[10px] leading-snug">“Beach vacation in March, family of four, under $5K.”</p>
             </div>
-            <div style="text-align:right;">
-              <strong style="color:#fff;font-size:18px;">€${opt.price}</strong>
-              <div class="badge-refund ${opt.refundable ? 'true':'false'}" style="margin-top:8px;">${opt.refundable ? 'Refundable' : 'Non-Refundable'}</div>
+            <div class="col-span-1 flex items-center justify-center">
+              <div class="h-0.5 w-full bg-white"></div>
+            </div>
+            <div class="col-span-1 border border-white p-2">
+              <div class="uppercase text-[10px] mb-1">AI Parsing</div>
+              <p class="text-[10px] leading-snug">LLM → dates, budget, constraints, party size.</p>
+            </div>
+            <div class="col-span-1 flex items-center justify-center">
+              <div class="h-0.5 w-full bg-white"></div>
             </div>
           </div>
-          <div style="color:#888;font-size:12px;line-height:1.4;">${item.details}</div>
+          <div class="grid grid-cols-2 gap-2 mt-3">
+            <div class="border border-white p-2">
+              <div class="uppercase text-[10px] mb-1">Orchestration Core</div>
+              <p class="text-[10px] leading-snug">Ruby decides. Providers and AI only supply data.</p>
+            </div>
+            <div class="border border-white p-2">
+              <div class="uppercase text-[10px] mb-1">Options & Itinerary</div>
+              <p class="text-[10px] leading-snug">Comparable options, constraints, trade‑offs, next actions.</p>
+            </div>
+          </div>
         </div>
-      `;
-    }).join('');
-  }
-
-  // render single option cards (restaurants)
-  function renderSingle(type, item) {
-    const cardId = item.id;
-    const safeName = escapeAttr(item.name);
-    const safeDetails = escapeAttr(item.details);
-    return `
-      <div class="card" id="${cardId}" data-type="${type}" data-price="${item.price}" data-name="${safeName}" data-details="${safeDetails}"
-           data-refundable="false" data-changeable="true" onclick="selectItem('${type}','${cardId}', ${item.price})" role="button" tabindex="0" aria-pressed="false">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-          <strong style="color:#00ff87;font-size:14px;">${item.name}</strong>
-          <strong style="color:#fff;font-size:18px;">€${item.price}</strong>
-        </div>
-        <div style="color:#888;font-size:12px;line-height:1.4;">${item.details}</div>
       </div>
-    `;
-  }
+    </section>
 
-  /* ---------- Selection logic ---------- */
-  function selectItem(type, cardId, price) {
-    // Deselect other cards of same type
-    const container = document.getElementById(type + 'Results');
-    if (container) container.querySelectorAll('.card').forEach(c => {
-      c.classList.remove('selected');
-      c.setAttribute('aria-pressed','false');
-    });
-
-    const card = document.getElementById(cardId);
-    if (!card) return;
-    card.classList.add('selected');
-    card.setAttribute('aria-pressed','true');
-
-    const name = card.dataset.name || '';
-    const details = card.dataset.details || '';
-    const refundable = (card.dataset.refundable === 'true');
-    const changeable = (card.dataset.changeable === 'true');
-    const optionType = card.dataset.optiontype || '';
-
-    // Save to itinerary
-    itinerary[type] = { name, details, price, refundable, changeable, optionType, cardId };
-
-    updateItinerary();
-    updateProgress();
-
-    // assistant contextual replies & tab auto-advance
-    if (type === 'flight') {
-      addMsg('ai', `Great choice — ${name} selected (${optionType}). Let's find a hotel next.`);
-      setTimeout(() => switchTab(1), 700);
-    } else if (type === 'hotel') {
-      addMsg('ai', `Perfect — ${name} selected (${optionType}). Would you like dining suggestions?`);
-      setTimeout(() => switchTab(2), 700);
-    } else {
-      addMsg('ai', `${name} added to your trip!`);
-    }
-  }
-
-  /* ---------- Itinerary / Totals / Reset ---------- */
-  function updateItinerary() {
-    const container = document.getElementById('itineraryItems');
-    const totalSection = document.getElementById('totalSection');
-    const totalPriceEl = document.getElementById('totalPrice');
-    const completeBtn = document.getElementById('completeBtn');
-
-    const parts = [];
-    let total = 0;
-
-    if (itinerary.flight) {
-      parts.push(`
-        <div class="itinerary-item" id="it-flight">
-          <div class="itinerary-item-title">✈️ FLIGHT</div>
-          <div class="itinerary-item-details">${itinerary.flight.name}<br>${itinerary.flight.details}</div>
-          <div style="margin-top:6px;font-size:12px;color:${itinerary.flight.refundable ? '#60efff':'#ff8080'};">
-            ${itinerary.flight.refundable ? 'Refundable / Changeable' : 'Non-Refundable'}
-          </div>
-          <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.flight.price}</div>
+    <!-- GOLDEN PATH -->
+    <section class="border-b border-white px-6 py-10">
+      <div class="max-w-5xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl md:text-2xl font-bold uppercase">Golden Path · 3–5 Minutes to Value</h2>
+          <span class="text-[10px] uppercase">Intent → Confirmation → Options → Itinerary</span>
         </div>
-      `);
-      total += itinerary.flight.price;
-    }
-
-    if (itinerary.hotel) {
-      parts.push(`
-        <div class="itinerary-item" id="it-hotel">
-          <div class="itinerary-item-title">🏨 HOTEL</div>
-          <div class="itinerary-item-details">${itinerary.hotel.name}<br>${itinerary.hotel.details}</div>
-          <div style="margin-top:6px;font-size:12px;color:${itinerary.hotel.refundable ? '#60efff':'#ff8080'};">
-            ${itinerary.hotel.refundable ? 'Refundable / Changeable' : 'Non-Refundable'}
+        <div class="grid md:grid-cols-4 gap-4 text-xs">
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">01 · Intent capture</div>
+            <p>Natural language input is parsed into parameters: dates, constraints, preferences.</p>
           </div>
-          <div style="color:#00ff87;font-weight:900;margin-top:8px;">€${itinerary.hotel.price}/night</div>
-        </div>
-      `);
-      total += (itinerary.hotel.price * 2); // assume 2 nights
-    }
-
-    if (itinerary.restaurant) {
-      parts.push(`
-        <div class="itinerary-item" id="it-restaurant">
-          <div class="itinerary-item-title">🍽 DINING</div>
-          <div class="itinerary-item-details">${itinerary.restaurant.name}<br>${itinerary.restaurant.details}</div>
-          <div style="margin-top:6px;font-size:12px;color:#60efff;">
-            ${itinerary.restaurant.changeable ? 'Changeable' : ''}
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">02 · Structured confirmation</div>
+            <p>Explicit review of assumptions. Users see what the system understood.</p>
           </div>
-          <div style="color:#00ff87;font-weight:900;margin-top:8px;">~€${itinerary.restaurant.price}/person</div>
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">03 · Option comparison</div>
+            <p>Normalized, comparable results with transparent scoring and trade‑offs.</p>
+          </div>
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">04 · Itinerary assembly</div>
+            <p>Coherent trip structure, booking links, documented assumptions, clear edit paths.</p>
+          </div>
         </div>
-      `);
-      total += itinerary.restaurant.price;
-    }
+        <p class="text-[11px] mt-4">
+          First‑time users must understand: what the AI did, why it did it, and how to override it.
+        </p>
+      </div>
+    </section>
 
-    if (parts.length > 0) {
-      container.innerHTML = parts.join('');
-      totalSection.style.display = 'flex';
-      totalPriceEl.textContent = '€' + total;
-      completeBtn.disabled = false;
-    } else {
-      container.innerHTML = '<div class="empty-state">Select items to build your itinerary</div>';
-      totalSection.style.display = 'none';
-      completeBtn.disabled = true;
-    }
-  }
+    <!-- ARCHITECTURE -->
+    <section class="border-b border-white px-6 py-10">
+      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-10">
+        <div class="space-y-3 text-xs">
+          <h2 class="text-xl md:text-2xl font-bold uppercase">System Architecture & Ruby</h2>
+          <p><span class="font-bold">Single Ruby orchestration service.</span> Ruby 3.x + Sinatra API for readability, maintainability, and rapid iteration.</p>
+          <p><span class="font-bold">Domain-driven design.</span> POROs model trips, legs, constraints, assumptions explicitly.</p>
+          <p><span class="font-bold">Explicit orchestration layer.</span> Decision logic lives in Ruby, not in AI or provider APIs. Providers are passive data sources.</p>
+          <p class="text-[11px] uppercase">Architecture is product.</p>
+        </div>
+        <div class="border border-white p-4 text-xs space-y-3">
+          <div class="flex items-center justify-between border-b border-white pb-2">
+            <span class="uppercase text-[10px]">High-level Flow</span>
+            <span class="text-[10px] opacity-60">Frontend → Ruby → Providers / AI</span>
+          </div>
+          <div class="space-y-2">
+            <div class="border border-white p-2">
+              <div class="text-[10px] uppercase mb-1">Frontend UI</div>
+              <p>Static app focused on clarity and interaction, not booking.</p>
+            </div>
+            <div class="border border-white p-2">
+              <div class="text-[10px] uppercase mb-1">Ruby API + Orchestration Core</div>
+              <p>Owns validation, decision logic, and explainability.</p>
+            </div>
+            <div class="border border-white p-2">
+              <div class="text-[10px] uppercase mb-1">Providers / AI</div>
+              <p>Return normalized data only. AI parses intent; providers provide quotes.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  function resetTrip() {
-    if (!confirm('Clear your entire itinerary? This cannot be undone.')) return;
-    itinerary = { flight: null, hotel: null, restaurant: null };
-    document.querySelectorAll('.card').forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-pressed','false'); });
-    document.getElementById('itineraryItems').innerHTML = '<div class="empty-state">Select items to build your itinerary</div>';
-    document.getElementById('totalSection').style.display = 'none';
-    document.getElementById('totalPrice').textContent = '€0';
-    document.getElementById('completeBtn').disabled = true;
-    document.querySelectorAll('.progress-step').forEach((el,i) => el.classList.toggle('active', i === 0));
-    addMsg('ai', 'Trip reset. Start your search again!');
-  }
+    <!-- REQUEST LIFECYCLE -->
+    <section class="border-b border-white px-6 py-10">
+      <div class="max-w-5xl mx-auto">
+        <h2 class="text-xl md:text-2xl font-bold uppercase mb-4">Request Lifecycle</h2>
+        <div class="grid md:grid-cols-3 gap-4 text-xs">
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">01 · Raw intent</div>
+            <p>User submits: “Beach vacation in March, family of four, under $5K.”</p>
+          </div>
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">02 · Validate & normalize</div>
+            <p>Ruby API checks completeness, sanitizes input, and transforms it into an internal request format.</p>
+          </div>
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">03 · AI extracts structured intent</div>
+            <p>LLM parses dates, destination constraints, budget, and party composition.</p>
+          </div>
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">04 · Provider quotes</div>
+            <p>Adapters query flight, hotel, and activity providers, normalize responses into consistent schemas.</p>
+          </div>
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">05 · Domain validation</div>
+            <p>Domain models (Trip, Leg, Constraint) are built and checked for logical consistency.</p>
+          </div>
+          <div class="border border-white p-3">
+            <div class="text-[10px] uppercase mb-1">06 · Orchestrated response</div>
+            <p>Itinerary with surfaced assumptions, confidence scores, alternatives, and next action prompts.</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  function updateProgress() {
-    let step = 0;
-    if (itinerary.flight) step = 1;
-    if (itinerary.hotel) step = 2;
-    if (itinerary.restaurant) step = 3;
-    document.querySelectorAll('.progress-step').forEach((el,i) => {
-      const wasActive = el.classList.contains('active');
-      el.classList.toggle('active', i <= step);
-      if (!wasActive && el.classList.contains('active')) {
-        el.animate([{ boxShadow:'0 0 0 rgba(0,255,135,0)' }, { boxShadow:'0 10px 30px rgba(0,255,135,0.08)' }, { boxShadow:'0 0 0 rgba(0,255,135,0)' }], { duration:700, easing:'ease' });
-      }
-    });
-  }
+    <!-- DEMO SECTION -->
+    <section class="border-b border-white px-6 py-10">
+      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-stretch">
+        <div class="space-y-3 text-xs">
+          <h2 class="text-xl md:text-2xl font-bold uppercase">Try the Demo</h2>
+          <p><span class="font-bold">Demo mode</span> works immediately with realistic data, no live bookings.</p>
+          <p>The UI uses hard grids, high contrast, and minimal decoration to expose interaction flow and hierarchy.</p>
+          <p>Use natural language intent, review what the system understood, and inspect how options are assembled.</p>
+          <a href="https://athar-travel-ai-app.pages.dev/?"
+             class="inline-block mt-4 border border-white bg-white text-black px-4 py-2 text-xs uppercase tracking-wide hover:bg-black hover:text-white transition">
+            Open App in New Tab
+          </a>
+        </div>
+        <div class="border border-white bg-gray-900 flex items-center justify-center text-[10px] text-gray-300">
+          <!-- if you can embed, replace with an iframe -->
+          <!-- <iframe src="https://athar-travel-ai-app.pages.dev/?" class="w-full h-96 border-0"></iframe> -->
+          <span><iframe
+  src="https://athar-travel-ai-app.pages.dev/?"
+  title="Travel AI App Demo"
+  style="border: 1px solid #ffffff; width: 100%; height: 80vh; background: #000000;"
+  loading="lazy"
+></iframe>
+</span>
+        </div>
+      </div>
+    </section>
 
-  /* ---------- Booking complete & Change/Cancel buttons ---------- */
-  function completeBooking() {
-    const total = document.getElementById('totalPrice').textContent;
-    addMsg('ai', `🎉 Booking confirmed! Total cost: ${total}. You can still change or cancel any part below.`);
-    document.querySelectorAll('.progress-step').forEach(el => el.classList.add('active'));
-    // add change/cancel buttons to itinerary items
-    addChangeCancelButtons();
-  }
+    <!-- BUILD PHILOSOPHY & PRINCIPLES -->
+    <section class="px-6 py-10">
+      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 text-xs">
+        <div class="border border-white p-4 space-y-2">
+          <h2 class="text-sm uppercase mb-2">Build philosophy, status, next</h2>
+          <p><span class="font-bold">Start with one end-to-end flow</span> and validate it completely.</p>
+          <p><span class="font-bold">Replace mocked data incrementally,</span> provider by provider.</p>
+          <p><span class="font-bold">Document every architectural decision</span> as the system grows.</p>
+          <p>Built as real system, learning artifact, and portfolio case study.</p>
+          <div class="border-t border-white pt-2 mt-2">
+            <p>Status: product definition locked, UX flows defined, MVP scope constrained.</p>
+            <p>Next: implement Ruby orchestration service, connect intent parsing to domain models, replace first mocked API with a live provider.</p>
+          </div>
+        </div>
+        <div class="border border-white p-4 space-y-2">
+          <h2 class="text-sm uppercase mb-2">Principles that guide this work</h2>
+          <p><span class="font-bold">Architecture is product.</span> System design directly affects trust, explainability, and viability.</p>
+          <p><span class="font-bold">Transparency over automation.</span> AI should parse, not decide. Logic must be traceable and overridable.</p>
+          <p><span class="font-bold">Constraints enable clarity.</span> A single orchestration service and tight scope prevent complexity sprawl.</p>
+          <p class="text-[11px] mt-2">This is not a booking engine. It is a system for understanding, structuring, and orchestrating travel intent.</p>
+        </div>
+      </div>
+    </section>
+       
+    <div class="flex items-center justify-center">
+      <h3>
+        More from me:
+      </h3>
+      <ul>
+        <li><a href="https://github.com/atharux" target="_blank">🕹️ Github</a></li>
+        <li><a href="http://www.linkedin.com/in/atharhafiz" target="_blank">💻 Linkedin</a></li>
+        <li><a href="https://soundcloud.com/aguruxm16" target="_blank">🪩 SoundCloud</a></li>
+        <li><a href="https://atharux.com" target="_blank">👾 Portfolio</a></li>
+          <li><a href="https://atharux.com" target="_blank">© 2026 Athar Hafiz</a></li>
+      </ul>
 
-  function addChangeCancelButtons() {
-    // For each itinerary item (flight/hotel/restaurant), append Change & Cancel buttons if not present
-    const items = [
-      { id: 'it-flight', type: 'flight' },
-      { id: 'it-hotel', type: 'hotel' },
-      { id: 'it-restaurant', type: 'restaurant' }
-    ];
-    items.forEach(item => {
-      const el = document.getElementById(item.id);
-      if (!el) return;
-      // avoid adding multiple times
-      if (el.querySelector('.change-btn')) return;
-
-      const changeBtn = document.createElement('button');
-      changeBtn.className = 'tiny-btn change-btn';
-      changeBtn.textContent = 'Change';
-      changeBtn.onclick = () => handleChange(item.type);
-
-      const cancelBtn = document.createElement('button');
-      cancelBtn.className = 'tiny-btn cancel-btn';
-      cancelBtn.textContent = 'Cancel';
-      cancelBtn.onclick = () => handleCancel(item.type);
-
-      const wrapper = document.createElement('div');
-      wrapper.style.marginTop = '10px';
-      wrapper.appendChild(changeBtn);
-      wrapper.appendChild(cancelBtn);
-      el.appendChild(wrapper);
-    });
-  }
-
-  function handleChange(type) {
-    // Remove current selection to allow re-selection
-    if (type === 'flight') {
-      itinerary.flight = null;
-      document.querySelectorAll('#flightResults .card').forEach(c => c.classList.remove('selected'));
-      switchTab(0);
-      addMsg('ai', 'Okay — change your flight. Select a different option from the Flights tab.');
-    } else if (type === 'hotel') {
-      itinerary.hotel = null;
-      document.querySelectorAll('#hotelResults .card').forEach(c => c.classList.remove('selected'));
-      switchTab(1);
-      addMsg('ai', 'Okay — change your hotel. Select a different option from the Hotels tab.');
-    } else if (type === 'restaurant') {
-      itinerary.restaurant = null;
-      document.querySelectorAll('#restaurantResults .card').forEach(c => c.classList.remove('selected'));
-      switchTab(2);
-      addMsg('ai', 'Okay — change your dining choice. Select a different option from the Food tab.');
-    }
-    // Update UI/itinerary after removing selection
-    updateItinerary();
-    updateProgress();
-  }
-
-  function handleCancel(type) {
-    const mapping = { flight:'a flight', hotel:'a hotel', restaurant:'a restaurant' };
-    if (!confirm(`Cancel ${mapping[type]}?`)) return;
-    if (type === 'flight') {
-      // deselect card if present
-      if (itinerary.flight && itinerary.flight.cardId) {
-        const c = document.getElementById(itinerary.flight.cardId);
-        if (c) c.classList.remove('selected');
-      }
-      itinerary.flight = null;
-    } else if (type === 'hotel') {
-      if (itinerary.hotel && itinerary.hotel.cardId) {
-        const c = document.getElementById(itinerary.hotel.cardId);
-        if (c) c.classList.remove('selected');
-      }
-      itinerary.hotel = null;
-    } else if (type === 'restaurant') {
-      if (itinerary.restaurant && itinerary.restaurant.cardId) {
-        const c = document.getElementById(itinerary.restaurant.cardId);
-        if (c) c.classList.remove('selected');
-      }
-      itinerary.restaurant = null;
-    }
-    updateItinerary();
-    updateProgress();
-    addMsg('ai', `${mapping[type]} cancelled.`);
-  }
-
-  /* ---------- Chat open/close / FAB ---------- */
-  const chatModal = document.getElementById('chatModal');
-  const chatBackdrop = document.getElementById('chatBackdrop');
-  const fab = document.getElementById('fab');
-  const chatCloseBtn = document.getElementById('chatCloseBtn');
-
-  function openChat() {
-    document.body.classList.add('chat-open');
-    chatModal.classList.add('open');
-    chatModal.setAttribute('aria-hidden','false');
-    chatBackdrop.setAttribute('aria-hidden','false');
-    chatBackdrop.style.pointerEvents = 'auto';
-    fab.setAttribute('aria-hidden','true');
-    setTimeout(()=> { const input = document.getElementById('chatInput'); input.focus(); }, 300);
-  }
-
-  function closeChat() {
-    document.body.classList.remove('chat-open');
-    chatModal.classList.remove('open');
-    chatModal.setAttribute('aria-hidden','true');
-    chatBackdrop.setAttribute('aria-hidden','true');
-    chatBackdrop.style.pointerEvents = 'none';
-    fab.setAttribute('aria-hidden','false');
-  }
-
-  function toggleChat() {
-    if (chatModal.classList.contains('open')) closeChat(); else openChat();
-  }
-
-  // close chat with Esc
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && chatModal.classList.contains('open')) { closeChat(); }
-  });
-
-  // ensure clicking backdrop also closes
-  chatBackdrop.addEventListener('click', closeChat);
-
-  // prevent tab trap: allow keyboard access to close button etc.
-  chatCloseBtn.addEventListener('click', closeChat);
-
-  /* ---------- Chat messaging ---------- */
-  function sendMsg() {
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    if (!text) return;
-    addMsg('user', text);
-    input.value = '';
-    // simulate assistant thinking then respond
-    setTimeout(()=> addMsg('ai', 'Nice — let me search a few options for you.'), 700);
-  }
-
-  // Enter to send message (inside chat input)
-  document.getElementById('chatInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      sendMsg();
-    }
-  });
-
-  function addMsg(type, text) {
-    const messages = document.getElementById('messages');
-    const wrapper = document.createElement('div');
-    wrapper.className = 'message ' + (type === 'ai' ? 'ai': 'user');
-    const content = document.createElement('div');
-    content.className = 'content';
-    content.textContent = text;
-    wrapper.appendChild(content);
-    messages.appendChild(wrapper);
-    messages.scrollTop = messages.scrollHeight;
-  }
-
-  /* ---------- Init & welcome ---------- */
-  window.addEventListener('load', () => {
-    if (!localStorage.getItem('visited')) {
-      setTimeout(()=> addMsg('ai','👋 Welcome! Start by searching for flights, then build your perfect trip step by step.'), 900);
-      localStorage.setItem('visited','true');
-    }
-    // Insert initial greeting for chat & open it
-    setTimeout(()=> {
-      addMsg('ai', "Welcome back! Let's plan your next trip");
-      openChat();
-    }, 600);
-  });
-
-  /* ---------- Keyboard accessibility for cards ---------- */
-  document.addEventListener('keydown', (e) => {
-    const active = document.activeElement;
-    if (active && active.classList && active.classList.contains('card') && (e.key === 'Enter' || e.key === ' ')) {
-      e.preventDefault();
-      const type = active.dataset.type;
-      const id = active.id;
-      const price = parseFloat(active.dataset.price || '0');
-      selectItem(type, id, price);
-    }
-  });
-
-  /* ---------- Make functions available globally ---------- */
-  window.search = search;
-  window.selectItem = selectItem;
-  window.switchTab = switchTab;
-  window.resetTrip = resetTrip;
-  window.startJourney = startJourney;
-  window.toggleVoice = toggleVoice;
-  window.showConfig = showConfig;
-  window.closeConfig = closeConfig;
-  window.saveConfig = saveConfig;
-  window.showHelp = showHelp;
-  window.closeHelp = closeHelp;
-  window.openConfigFromHelp = openConfigFromHelp;
-  window.fillIntent = fillIntent;
-  window.completeBooking = completeBooking;
-  window.openChat = openChat;
-  window.closeChat = closeChat;
-  window.toggleChat = toggleChat;
-</script>
+          
+    </div>
+    
+  </main>
 </body>
 </html>
